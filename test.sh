@@ -3,7 +3,7 @@ try() {
     expected="$1"
     input="$2"
 
-    ./rehubcc "$input" > tmp.s
+    ./rehabcc "$input" > tmp.s
     gcc -o tmp tmp.s
     ./tmp
 
@@ -18,6 +18,7 @@ try() {
 
 try 0 0
 try 42 42
+try 21 '5+20-4'
 
 echo OK
 rm -f tmp tmp.s
