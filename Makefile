@@ -1,12 +1,12 @@
 CFLAGS=-std=c11 -g -static
 
-rehubcc: rehubcc.c
+rehabcc: rehabcc.c
 
-test: rehubcc
+test: rehabcc
 	./test.sh
 
 clean:
-	rm -f rehubcc *.o tmp*
+	rm -f rehabcc *.o tmp*
 
 .PHONY: test clean
 
