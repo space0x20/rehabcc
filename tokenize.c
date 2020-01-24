@@ -1,7 +1,26 @@
 #include "rehabcc.h"
 
+typedef struct
+{
+    TokenKind kind;
+    char *str;
+} Keyword;
+
+// clang-format off
+static Keyword keywords[] = {
+    {TK_RESERVED, "+"},
+    {TK_RESERVED, "-"},
+    {TK_RESERVED, "*"},
+    {TK_RESERVED, "/"},
+    {TK_RESERVED, "("},
+    {TK_RESERVED, ")"},
+    {TK_EOF, ""},
+};
+// clang-format on
+
 // 新しいトークンを作成して cur の次につなげる
-Token *new_token(TokenKind kind, Token *cur, char *str, int len)
+Token *
+new_token(TokenKind kind, Token *cur, char *str, int len)
 {
     Token *tok = calloc(1, sizeof(Token));
     tok->kind = kind;
@@ -18,6 +37,7 @@ Token *tokenize(char *p)
     head.next = NULL;
     Token *cur = &head;
 
+loop:
     while (*p)
     {
         // 空白文字をスキップ
@@ -27,10 +47,15 @@ Token *tokenize(char *p)
             continue;
         }
 
-        if (strchr("+-*/()", *p))
+        for (int i = 0; keywords[i].kind != TK_EOF; i++)
         {
-            cur = new_token(TK_RESERVED, cur, p++, 1);
-            continue;
+            int len = strlen(keywords[i].str);
+            if (strncmp(p, keywords[i].str, len) == 0)
+            {
+                cur = new_token(keywords[i].kind, cur, p, len);
+                p += len;
+                goto loop;
+            }
         }
 
         if (isdigit(*p))
