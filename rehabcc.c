@@ -1,27 +1,4 @@
-#include <ctype.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-// トークンの種類
-typedef enum
-{
-    TK_RESERVED, // 記号
-    TK_NUM,      // 整数
-    TK_EOF,      // 入力終わり
-} TokenKind;
-
-// トークン型
-typedef struct Token Token;
-struct Token
-{
-    TokenKind kind;
-    Token *next;
-    int val;
-    char *str;
-};
+#include "rehabcc.h"
 
 // 現在着目しているトークン
 Token *token;
