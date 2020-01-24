@@ -1,0 +1,48 @@
+#include "rehabcc.h"
+
+// 新しいトークンを作成して cur の次につなげる
+Token *new_token(TokenKind kind, Token *cur, char *str, int len)
+{
+    Token *tok = calloc(1, sizeof(Token));
+    tok->kind = kind;
+    tok->str = str;
+    tok->len = len;
+    cur->next = tok;
+    return tok;
+}
+
+// 入力文字列をトークン分割して最初のトークンを返す
+Token *tokenize(char *p)
+{
+    Token head;
+    head.next = NULL;
+    Token *cur = &head;
+
+    while (*p)
+    {
+        // 空白文字をスキップ
+        if (isspace(*p))
+        {
+            p++;
+            continue;
+        }
+
+        if (strchr("+-*/()", *p))
+        {
+            cur = new_token(TK_RESERVED, cur, p++, 1);
+            continue;
+        }
+
+        if (isdigit(*p))
+        {
+            cur = new_token(TK_NUM, cur, p, 0);
+            cur->val = strtol(p, &p, 10); // 10桁まで
+            continue;
+        }
+
+        error_at(p, "トークン分割できません");
+    }
+
+    new_token(TK_EOF, cur, p, 0);
+    return head.next;
+}

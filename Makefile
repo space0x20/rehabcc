@@ -1,6 +1,11 @@
 CFLAGS=-std=c11 -g -static
+SRCS=$(wildcard *.c)
+OBJS=$(SRCS:.c=.o)
 
-rehabcc: rehabcc.c
+rehabcc: $(OBJS)
+	$(CC) -o rehabcc $(OBJS) $(LDFLAGS)
+
+$(OBJS): rehabcc.h
 
 test: rehabcc
 	./test.sh

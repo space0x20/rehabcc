@@ -30,10 +30,18 @@ struct Token
     int val;
 };
 
-// main.c ///////////////////////////////////////
+// rehabcc.c ////////////////////////////////////
 
 // 現在着目しているトークン
 extern Token *token;
 
 // 入力プログラム
 extern char *user_input;
+
+// エラー処理
+void error(char *fmt, ...);
+void error_at(char *loc, char *fmt, ...);
+
+// tokenize.c ///////////////////////////////////
+
+Token *tokenize(char *p);
