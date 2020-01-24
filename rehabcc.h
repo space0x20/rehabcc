@@ -73,3 +73,7 @@ Token *tokenize(char *p);
 // parse.c //////////////////////////////////////
 
 Node *parse(void);
+
+// generate.c ///////////////////////////////////
+
+void generate(Node *node);

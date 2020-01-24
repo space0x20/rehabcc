@@ -29,40 +29,6 @@ void error_at(char *loc, char *fmt, ...)
     exit(1);
 }
 
-void gen(Node *node)
-{
-    if (node->kind == ND_NUM)
-    {
-        printf("  push %d\n", node->val);
-        return;
-    }
-
-    gen(node->lhs);
-    gen(node->rhs);
-
-    printf("  pop rdi\n");
-    printf("  pop rax\n");
-
-    switch (node->kind)
-    {
-    case ND_ADD:
-        printf("  add rax, rdi\n");
-        break;
-    case ND_SUB:
-        printf("  sub rax, rdi\n");
-        break;
-    case ND_MUL:
-        printf("  imul rax, rdi\n");
-        break;
-    case ND_DIV:
-        printf("  cqo\n");      // 64 bit の rax の値を 128 bit に伸ばして rdx と rax にセットする
-        printf("  idiv rdi\n"); // rdx と rax を合わせた 128 bit の数値を rdi で割り算する
-        break;
-    }
-
-    printf("  push rax\n");
-}
-
 int main(int argc, char **argv)
 {
     if (argc != 2)
@@ -81,7 +47,7 @@ int main(int argc, char **argv)
     printf("main:\n");
 
     // アセンブリコード生成
-    gen(node);
+    generate(node);
 
     printf("  pop rax\n"); // スタックトップに式全体の値が残っているはず
     printf("  ret\n");
