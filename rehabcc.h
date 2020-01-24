@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Token ////////////////////////////////////////
+
 // トークンの種類
 typedef enum
 {
@@ -30,6 +32,28 @@ struct Token
     int val;
 };
 
+// Node /////////////////////////////////////////
+
+// 抽象構文木のノードの種類
+typedef enum
+{
+    ND_ADD,
+    ND_SUB,
+    ND_MUL,
+    ND_DIV,
+    ND_NUM,
+} NodeKind;
+
+typedef struct Node Node;
+
+struct Node
+{
+    NodeKind kind;
+    Node *lhs;
+    Node *rhs;
+    int val;
+};
+
 // rehabcc.c ////////////////////////////////////
 
 // 現在着目しているトークン
@@ -45,3 +69,7 @@ void error_at(char *loc, char *fmt, ...);
 // tokenize.c ///////////////////////////////////
 
 Token *tokenize(char *p);
+
+// parse.c //////////////////////////////////////
+
+Node *parse(void);
