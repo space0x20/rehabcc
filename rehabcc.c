@@ -6,6 +6,9 @@ Token *token;
 // 入力プログラム
 char *user_input;
 
+// 構文木列
+Node *code[100];
+
 void error(char *fmt, ...)
 {
     va_list ap;
@@ -39,17 +42,9 @@ int main(int argc, char **argv)
 
     // トークン分割
     user_input = argv[1];
-    token = tokenize(argv[1]);
-    Node *node = parse();
+    tokenize();
+    parse();
+    generate();
 
-    printf(".intel_syntax noprefix\n");
-    printf(".global main\n");
-    printf("main:\n");
-
-    // アセンブリコード生成
-    generate(node);
-
-    printf("  pop rax\n"); // スタックトップに式全体の値が残っているはず
-    printf("  ret\n");
     return 0;
 }

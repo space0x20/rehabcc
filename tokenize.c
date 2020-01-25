@@ -22,7 +22,9 @@ static Keyword keywords[] = {
     {TK_LT, "<"},
     {TK_GE, ">="},
     {TK_GT, ">"},
-    {TK_EOF, ""},
+    {TK_ASSIGN, "="},
+    {TK_SCOLON, ";"},
+    {TK_EOF, ""},  // 最後においておくこと
 };
 // clang-format on
 
@@ -39,11 +41,12 @@ new_token(TokenKind kind, Token *cur, char *str, int len)
 }
 
 // 入力文字列をトークン分割して最初のトークンを返す
-Token *tokenize(char *p)
+void tokenize(void)
 {
     Token head;
     head.next = NULL;
     Token *cur = &head;
+    char *p = user_input;
 
 loop:
     while (*p)
@@ -75,9 +78,17 @@ loop:
             continue;
         }
 
+        // 識別子トークン
+        if (islower(*p))
+        {
+            cur = new_token(TK_IDENT, cur, p, 1);
+            p += 1;
+            continue;
+        }
+
         error_at(p, "トークン分割できません");
     }
 
     new_token(TK_EOF, cur, p, 0);
-    return head.next;
+    token = head.next;
 }

@@ -22,7 +22,10 @@ typedef enum
     TK_LE,     // <=
     TK_GT,     // >
     TK_GE,     // >=
+    TK_ASSIGN, // =
+    TK_SCOLON, // ;
     TK_NUM,    // 整数
+    TK_IDENT,  // 識別子
     TK_EOF,    // 入力終わり
 } TokenKind;
 
@@ -57,6 +60,8 @@ typedef enum
     ND_NE,
     ND_LT,
     ND_LE,
+    ND_ASSIGN,
+    ND_LVAR, // ローカル変数
 } NodeKind;
 
 typedef struct Node Node;
@@ -67,6 +72,9 @@ struct Node
     Node *lhs;
     Node *rhs;
     int val;
+
+    // kind = ND_LVAR の場合、ベースポインタからのオフセット
+    int offset;
 };
 
 // rehabcc.c ////////////////////////////////////
@@ -77,18 +85,21 @@ extern Token *token;
 // 入力プログラム
 extern char *user_input;
 
+// 構文木列
+extern Node *code[];
+
 // エラー処理
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 
 // tokenize.c ///////////////////////////////////
 
-Token *tokenize(char *p);
+void tokenize(void);
 
 // parse.c //////////////////////////////////////
 
-Node *parse(void);
+void parse(void);
 
 // generate.c ///////////////////////////////////
 
-void generate(Node *node);
+void generate(void);

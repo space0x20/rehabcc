@@ -12,6 +12,21 @@ static bool consume(TokenKind kind)
     return true;
 }
 
+// 着目しているトークンが識別子の場合には、そのトークンを返す。
+// さらに着目しているトークンを一つすすめる。
+// 着目しているトークンが識別子でない場合は、NULLポインタを返す。
+// この場合着目しているトークンは進めない。
+static Token *consume_ident(void)
+{
+    if (token->kind == TK_IDENT)
+    {
+        Token *tok = token;
+        token = token->next;
+        return tok;
+    }
+    return NULL;
+}
+
 // 次のトークンが期待している種類のものであれば、トークンを一つ進める。
 // それ以外の場合であればエラーを出す。
 static void expect(TokenKind kind)
@@ -60,14 +75,21 @@ static Node *new_node_num(int val)
 }
 
 // 文法
-// expr       = equality
+// program    = stmt*
+// stmt       = expr ";"
+// expr       = assign
+// assign     = equality ("=" assign)?
 // equality   = relational ("==" relational | "!=" relational)*
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 // add        = mul ("+" mul | "-" mul)*
 // mul        = primary ("*" primary | "/" primary)*
 // unary      = ("+" | "-")? primary
-// primary    = num | "(" expr ")"
+// primary    = num | ident | "(" expr ")"
+
+static void program(void);
+static Node *stmt(void);
 static Node *expr(void);
+static Node *assign(void);
 static Node *equality(void);
 static Node *relational(void);
 static Node *add(void);
@@ -75,14 +97,41 @@ static Node *mul(void);
 static Node *unary(void);
 static Node *primary(void);
 
-Node *parse(void)
+void parse(void)
 {
-    return expr();
+    program();
+}
+
+static void program(void)
+{
+    int i = 0;
+    while (!at_eof())
+    {
+        code[i++] = stmt();
+    }
+    code[i] = NULL;
+}
+
+static Node *stmt(void)
+{
+    Node *node = expr();
+    expect(TK_SCOLON);
+    return node;
 }
 
 static Node *expr(void)
 {
-    return equality();
+    return assign();
+}
+
+static Node *assign(void)
+{
+    Node *node = equality();
+    if (consume(TK_ASSIGN))
+    {
+        node = new_node(ND_ASSIGN, node, assign());
+    }
+    return node;
 }
 
 static Node *equality(void)
@@ -196,6 +245,15 @@ static Node *primary(void)
     {
         Node *node = expr();
         expect(TK_RPAREN);
+        return node;
+    }
+
+    Token *tok = consume_ident();
+    if (tok)
+    {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_LVAR;
+        node->offset = (tok->str[0] - 'a' + 1) * 8;
         return node;
     }
 

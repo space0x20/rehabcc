@@ -9,16 +9,54 @@ static void emit(char *fmt, ...)
     printf("\n");
 }
 
-void generate(Node *node)
+static void println(char *fmt, ...)
 {
-    if (node->kind == ND_NUM)
+    va_list ap;
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    printf("\n");
+}
+
+// ノードを左辺値として評価して、スタックにプッシュする
+// 左辺値として評価できない場合はエラーとする
+static void gen_lval(Node *node)
+{
+    if (node->kind != ND_LVAR)
     {
+        error("代入の左辺値が変数ではありません");
+    }
+    // 変数には RBP - offset でアクセスできる
+    emit("mov rax, rbp");
+    emit("sub rax, %d", node->offset);
+    emit("push rax");
+}
+
+static void gen(Node *node)
+{
+    switch (node->kind)
+    {
+    case ND_NUM:
         emit("push %d", node->val);
+        return;
+    case ND_LVAR:
+        // 変数を右辺値として評価する
+        gen_lval(node); // スタックトップに変数のアドレスが来る
+        emit("pop rax");
+        emit("mov rax, [rax]"); // rax に変数の値を読み出す
+        emit("push rax");
+        return;
+    case ND_ASSIGN:
+        gen_lval(node->lhs);
+        gen(node->rhs);
+        emit("pop rdi"); // 右辺値
+        emit("pop rax"); // 左辺アドレス
+        emit("mov [rax], rdi");
+        emit("push rdi"); // 代入式の評価値は右辺値
         return;
     }
 
-    generate(node->lhs);
-    generate(node->rhs);
+    gen(node->lhs);
+    gen(node->rhs);
 
     emit("pop rdi");
     emit("pop rax");
@@ -61,4 +99,30 @@ void generate(Node *node)
     }
 
     emit("push rax");
+}
+
+void generate(void)
+{
+    // アセンブリの前半部分
+    println(".intel_syntax noprefix");
+    println(".global main");
+    println("main:");
+
+    // プロローグ
+    // 変数26個分をスタックに確保
+    emit("push rbp");
+    emit("mov rbp, rsp");
+    emit("sub rsp, 208");
+
+    // 最初の式から順にコード生成
+    for (int i = 0; code[i] != NULL; i++)
+    {
+        gen(code[i]);
+        emit("pop rax"); // 途中式の評価結果は逐次捨てる
+    }
+
+    // エピローグ
+    emit("mov rsp, rbp");
+    emit("pop rbp");
+    emit("ret");
 }
