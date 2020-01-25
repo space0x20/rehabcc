@@ -16,7 +16,7 @@ try() {
     fi
 }
 
-try 0 '0;'
+try 0 'return 0;'
 try 42 '42;'
 try 21 '5+20-4;'
 try 21 '5 + 20 - 4;'
@@ -52,6 +52,10 @@ try 3 'a = 1; b = 2; a + b;'
 
 # ステップ10
 try 3 'foo = 1; bar = 2; foo + bar;'
+
+# ステップ11
+try 3 'foo = 1; bar = 2; return foo + bar;'
+try 3 'foo = 1; bar = 2; return foo + bar; return 42;'
 
 echo OK
 rm -f tmp tmp.s

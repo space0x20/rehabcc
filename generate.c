@@ -53,6 +53,14 @@ static void gen(Node *node)
         emit("mov [rax], rdi");
         emit("push rdi"); // 代入式の評価値は右辺値
         return;
+    case ND_RETURN:
+        gen(node->ret); // return 式の値を評価、スタックトップに式の値が残る
+        emit("pop rax");
+        // 関数のプロローグ
+        emit("mov rsp, rbp");
+        emit("pop rbp");
+        emit("ret");
+        return;
     }
 
     gen(node->lhs);

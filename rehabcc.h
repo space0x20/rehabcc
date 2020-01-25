@@ -24,6 +24,7 @@ typedef enum
     TK_GE,     // >=
     TK_ASSIGN, // =
     TK_SCOLON, // ;
+    TK_RETURN, // return
     TK_NUM,    // 整数
     TK_IDENT,  // 識別子
     TK_EOF,    // 入力終わり
@@ -73,6 +74,7 @@ typedef enum
     ND_LT,
     ND_LE,
     ND_ASSIGN,
+    ND_RETURN,
     ND_LVAR, // ローカル変数
 } NodeKind;
 
@@ -84,6 +86,9 @@ struct Node
     Node *lhs;
     Node *rhs;
     int val;
+
+    // kind = ND_RETURN
+    Node *ret;
 
     // kind = ND_LVAR の場合に使う
     LVar *lvar;

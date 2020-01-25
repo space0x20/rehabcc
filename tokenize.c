@@ -4,12 +4,12 @@ typedef struct
 {
     TokenKind kind;
     char *str;
-} Keyword;
+} TokenMap;
 
 // clang-format off
 // トークンとして認識する記号たち
 // 列挙順にマッチングを行うため、たとえば <= を < よりも先に並べる必要がある
-static Keyword keywords[] = {
+static TokenMap symbols[] = {
     {TK_PLUS, "+"},
     {TK_MINUS, "-"},
     {TK_MUL, "*"},
@@ -26,10 +26,16 @@ static Keyword keywords[] = {
     {TK_SCOLON, ";"},
     {TK_EOF, ""},  // 最後においておくこと
 };
+
+static TokenMap keywords[] = {
+    {TK_RETURN, "return"},
+    {TK_EOF, ""}, // 最後においておくこと
+};
 // clang-format on
 
 // 新しいトークンを作成して cur の次につなげる
-Token *new_token(TokenKind kind, Token *cur, char *str, int len)
+Token *
+new_token(TokenKind kind, Token *cur, char *str, int len)
 {
     Token *tok = calloc(1, sizeof(Token));
     tok->kind = kind;
@@ -64,10 +70,22 @@ loop:
         }
 
         // 記号のトークン化
+        for (int i = 0; symbols[i].kind != TK_EOF; i++)
+        {
+            int len = strlen(symbols[i].str);
+            if (strncmp(p, symbols[i].str, len) == 0)
+            {
+                cur = new_token(symbols[i].kind, cur, p, len);
+                p += len;
+                goto loop;
+            }
+        }
+
+        // キーワードのトークン化
         for (int i = 0; keywords[i].kind != TK_EOF; i++)
         {
             int len = strlen(keywords[i].str);
-            if (strncmp(p, keywords[i].str, len) == 0)
+            if (strncmp(p, keywords[i].str, len) == 0 && !isident(*(p + len)))
             {
                 cur = new_token(keywords[i].kind, cur, p, len);
                 p += len;

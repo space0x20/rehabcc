@@ -102,7 +102,7 @@ static Node *new_node_num(int val)
 
 // 文法
 // program    = stmt*
-// stmt       = expr ";"
+// stmt       = expr ";" | "return" expr ";"
 // expr       = assign
 // assign     = equality ("=" assign)?
 // equality   = relational ("==" relational | "!=" relational)*
@@ -140,6 +140,15 @@ static void program(void)
 
 static Node *stmt(void)
 {
+    if (consume(TK_RETURN))
+    {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_RETURN;
+        node->ret = expr();
+        expect(TK_SCOLON);
+        return node;
+    }
+
     Node *node = expr();
     expect(TK_SCOLON);
     return node;
