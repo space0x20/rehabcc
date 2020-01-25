@@ -85,7 +85,7 @@ loop:
         for (int i = 0; keywords[i].kind != TK_EOF; i++)
         {
             int len = strlen(keywords[i].str);
-            if (strncmp(p, keywords[i].str, len) == 0 && !isident(*(p + len)))
+            if (strncmp(p, keywords[i].str, len) == 0 && !isident(p[len]))
             {
                 cur = new_token(keywords[i].kind, cur, p, len);
                 p += len;

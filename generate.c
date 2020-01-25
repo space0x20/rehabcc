@@ -56,7 +56,7 @@ static void gen(Node *node)
     case ND_RETURN:
         gen(node->ret); // return 式の値を評価、スタックトップに式の値が残る
         emit("pop rax");
-        // 関数のプロローグ
+        // 呼び出し元の関数フレームに戻る
         emit("mov rsp, rbp");
         emit("pop rbp");
         emit("ret");
