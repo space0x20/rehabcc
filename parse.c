@@ -60,11 +60,17 @@ static Node *new_node_num(int val)
 }
 
 // 文法
-// expr    = mul ("+" mul | "-" mul)*
-// mul     = primary ("*" primary | "/" primary)*
-// unary   = ("+" | "-")? primary
-// primary = num | "(" expr ")"
+// expr       = equality
+// equality   = relational ("==" relational | "!=" relational)*
+// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+// add        = mul ("+" mul | "-" mul)*
+// mul        = primary ("*" primary | "/" primary)*
+// unary      = ("+" | "-")? primary
+// primary    = num | "(" expr ")"
 static Node *expr(void);
+static Node *equality(void);
+static Node *relational(void);
+static Node *add(void);
 static Node *mul(void);
 static Node *unary(void);
 static Node *primary(void);
@@ -75,6 +81,61 @@ Node *parse(void)
 }
 
 static Node *expr(void)
+{
+    return equality();
+}
+
+static Node *equality(void)
+{
+    Node *node = relational();
+
+    while (1)
+    {
+        if (consume(TK_EQ))
+        {
+            node = new_node(ND_EQ, node, relational());
+        }
+        else if (consume(TK_NE))
+        {
+            node = new_node(ND_NE, node, relational());
+        }
+        else
+        {
+            return node;
+        }
+    }
+}
+
+static Node *relational(void)
+{
+    Node *node = add();
+
+    while (1)
+    {
+        if (consume(TK_LT))
+        {
+            node = new_node(ND_LT, node, add());
+        }
+        else if (consume(TK_LE))
+        {
+            node = new_node(ND_LE, node, add());
+        }
+        else if (consume(TK_GT))
+        {
+            node = new_node(ND_LT, add(), node);
+        }
+        else if (consume(TK_GE))
+        {
+            node = new_node(ND_LE, add(), node);
+        }
+        else
+        {
+            return node;
+        }
+    }
+}
+
+static Node *add(void)
 {
     Node *node = mul();
 

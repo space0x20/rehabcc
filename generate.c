@@ -38,6 +38,26 @@ void generate(Node *node)
         emit("cqo");      // 64 bit の rax の値を 128 bit に伸ばして rdx と rax にセットする
         emit("idiv rdi"); // rdx と rax を合わせた 128 bit の数値を rdi で割り算する
         break;
+    case ND_EQ:
+        emit("cmp rax, rdi");  // rax と rdi の比較
+        emit("sete al");       // cmp の結果を al レジスタ (rax の下位 8 bit) に設定する
+        emit("movzb rax, al"); // rax の上位 56 bit をゼロで埋める
+        break;
+    case ND_NE:
+        emit("cmp rax, rdi");
+        emit("setne al");
+        emit("movzb rax, al");
+        break;
+    case ND_LT:
+        emit("cmp rax, rdi");
+        emit("setl al");
+        emit("movzb rax, al");
+        break;
+    case ND_LE:
+        emit("cmp rax, rdi");
+        emit("setle al");
+        emit("movzb rax, al");
+        break;
     }
 
     emit("push rax");

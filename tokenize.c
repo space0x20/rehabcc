@@ -7,6 +7,8 @@ typedef struct
 } Keyword;
 
 // clang-format off
+// トークンとして認識する記号たち
+// 列挙順にマッチングを行うため、たとえば <= を < よりも先に並べる必要がある
 static Keyword keywords[] = {
     {TK_PLUS, "+"},
     {TK_MINUS, "-"},
@@ -14,6 +16,12 @@ static Keyword keywords[] = {
     {TK_DIV, "/"},
     {TK_LPAREN, "("},
     {TK_RPAREN, ")"},
+    {TK_EQ, "=="},
+    {TK_NE, "!="},
+    {TK_LE, "<="},
+    {TK_LT, "<"},
+    {TK_GE, ">="},
+    {TK_GT, ">"},
     {TK_EOF, ""},
 };
 // clang-format on
@@ -47,6 +55,7 @@ loop:
             continue;
         }
 
+        // 記号のトークン化
         for (int i = 0; keywords[i].kind != TK_EOF; i++)
         {
             int len = strlen(keywords[i].str);
@@ -58,6 +67,7 @@ loop:
             }
         }
 
+        // 整数トークン
         if (isdigit(*p))
         {
             cur = new_token(TK_NUM, cur, p, 0);

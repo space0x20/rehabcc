@@ -16,6 +16,12 @@ typedef enum
     TK_DIV,    // /
     TK_LPAREN, // (
     TK_RPAREN, // )
+    TK_EQ,     // ==
+    TK_NE,     // !=
+    TK_LT,     // <
+    TK_LE,     // <=
+    TK_GT,     // >
+    TK_GE,     // >=
     TK_NUM,    // 整数
     TK_EOF,    // 入力終わり
 } TokenKind;
@@ -47,6 +53,10 @@ typedef enum
     ND_MUL,
     ND_DIV,
     ND_NUM,
+    ND_EQ,
+    ND_NE,
+    ND_LT,
+    ND_LE,
 } NodeKind;
 
 typedef struct Node Node;
