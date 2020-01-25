@@ -29,8 +29,7 @@ static Keyword keywords[] = {
 // clang-format on
 
 // 新しいトークンを作成して cur の次につなげる
-Token *
-new_token(TokenKind kind, Token *cur, char *str, int len)
+Token *new_token(TokenKind kind, Token *cur, char *str, int len)
 {
     Token *tok = calloc(1, sizeof(Token));
     tok->kind = kind;
@@ -38,6 +37,12 @@ new_token(TokenKind kind, Token *cur, char *str, int len)
     tok->len = len;
     cur->next = tok;
     return tok;
+}
+
+// 識別子として受け入れる文字かどうかをチェックする
+static bool isident(char c)
+{
+    return isalnum(c) || c == '_';
 }
 
 // 入力文字列をトークン分割して最初のトークンを返す
@@ -79,10 +84,16 @@ loop:
         }
 
         // 識別子トークン
-        if (islower(*p))
+        if (isident(*p))
         {
-            cur = new_token(TK_IDENT, cur, p, 1);
-            p += 1;
+            char *q = p;
+            while (isident(*q))
+            {
+                q++;
+            }
+            int len = q - p;
+            cur = new_token(TK_IDENT, cur, p, len);
+            p = q;
             continue;
         }
 

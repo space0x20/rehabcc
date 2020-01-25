@@ -46,6 +46,18 @@ struct Token
     int val;
 };
 
+// LVar /////////////////////////////////////////
+
+typedef struct LVar LVar;
+
+struct LVar
+{
+    LVar *next; // 次のローカル変数またはNULL
+    char *name; // ローカル変数名
+    int len;    // 変数名の長さ
+    int offset; // RBP からのオフセット
+};
+
 // Node /////////////////////////////////////////
 
 // 抽象構文木のノードの種類
@@ -73,8 +85,8 @@ struct Node
     Node *rhs;
     int val;
 
-    // kind = ND_LVAR の場合、ベースポインタからのオフセット
-    int offset;
+    // kind = ND_LVAR の場合に使う
+    LVar *lvar;
 };
 
 // rehabcc.c ////////////////////////////////////
@@ -87,6 +99,9 @@ extern char *user_input;
 
 // 構文木列
 extern Node *code[];
+
+// ローカル変数の連結リスト
+extern LVar *locals;
 
 // エラー処理
 void error(char *fmt, ...);

@@ -57,6 +57,32 @@ static bool at_eof(void)
     return token->kind == TK_EOF;
 }
 
+// ローカル変数を追加する
+static LVar *add_lvar(Token *tok)
+{
+    LVar *lvar = calloc(1, sizeof(LVar));
+    lvar->next = locals;
+    lvar->name = tok->str;
+    lvar->len = tok->len;
+    lvar->offset = locals->offset + 8;
+    locals = lvar;
+    return lvar;
+}
+
+// ローカル変数を検索する
+// 見つかれば LVar へのポインタ、見つからなければ NULL
+static LVar *find_lvar(Token *tok)
+{
+    for (LVar *lvar = locals; lvar != NULL; lvar = lvar->next)
+    {
+        if (lvar->len == tok->len && !memcmp(lvar->name, tok->str, lvar->len))
+        {
+            return lvar;
+        }
+    }
+    return NULL;
+}
+
 static Node *new_node(NodeKind kind, Node *lhs, Node *rhs)
 {
     Node *node = calloc(1, sizeof(Node));
@@ -253,7 +279,17 @@ static Node *primary(void)
     {
         Node *node = calloc(1, sizeof(Node));
         node->kind = ND_LVAR;
-        node->offset = (tok->str[0] - 'a' + 1) * 8;
+
+        LVar *lvar = find_lvar(tok);
+        if (lvar)
+        {
+            node->lvar = lvar;
+        }
+        else
+        {
+            lvar = add_lvar(tok);
+            node->lvar = lvar;
+        }
         return node;
     }
 

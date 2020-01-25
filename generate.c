@@ -27,7 +27,7 @@ static void gen_lval(Node *node)
     }
     // 変数には RBP - offset でアクセスできる
     emit("mov rax, rbp");
-    emit("sub rax, %d", node->offset);
+    emit("sub rax, %d", node->lvar->offset);
     emit("push rax");
 }
 

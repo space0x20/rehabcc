@@ -50,6 +50,8 @@ try 0 '42 >= 43;'
 # ステップ8
 try 3 'a = 1; b = 2; a + b;'
 
+# ステップ10
+try 3 'foo = 1; bar = 2; foo + bar;'
 
 echo OK
 rm -f tmp tmp.s
