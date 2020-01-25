@@ -8,12 +8,12 @@ typedef struct
 
 // clang-format off
 static Keyword keywords[] = {
-    {TK_RESERVED, "+"},
-    {TK_RESERVED, "-"},
-    {TK_RESERVED, "*"},
-    {TK_RESERVED, "/"},
-    {TK_RESERVED, "("},
-    {TK_RESERVED, ")"},
+    {TK_PLUS, "+"},
+    {TK_MINUS, "-"},
+    {TK_MUL, "*"},
+    {TK_DIV, "/"},
+    {TK_LPAREN, "("},
+    {TK_RPAREN, ")"},
     {TK_EOF, ""},
 };
 // clang-format on

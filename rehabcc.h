@@ -10,9 +10,14 @@
 // トークンの種類
 typedef enum
 {
-    TK_RESERVED, // 記号
-    TK_NUM,      // 整数
-    TK_EOF,      // 入力終わり
+    TK_PLUS,   // +
+    TK_MINUS,  // -
+    TK_MUL,    // *
+    TK_DIV,    // /
+    TK_LPAREN, // (
+    TK_RPAREN, // )
+    TK_NUM,    // 整数
+    TK_EOF,    // 入力終わり
 } TokenKind;
 
 // トークン型

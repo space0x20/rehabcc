@@ -2,9 +2,9 @@
 
 // 次のトークンが期待している種類のときには、トークンを一つ進めて真を返す。
 // そうでない場合は、偽を返す。
-static bool consume(char op)
+static bool consume(TokenKind kind)
 {
-    if (token->kind != TK_RESERVED || token->str[0] != op)
+    if (token->kind != kind)
     {
         return false;
     }
@@ -14,18 +14,18 @@ static bool consume(char op)
 
 // 次のトークンが期待している種類のものであれば、トークンを一つ進める。
 // それ以外の場合であればエラーを出す。
-static void expect(char op)
+static void expect(TokenKind kind)
 {
-    if (token->kind != TK_RESERVED || token->str[0] != op)
+    if (token->kind != kind)
     {
-        error_at(token->str, "%c ではありません", op);
+        error_at(token->str, "%d ではありません", kind);
     }
     token = token->next;
 }
 
 // 次のトークンが数値の場合、トークンを一つ進めて数値を返す。
 // それ以外の場合はエラーを出す。
-static int expect_number()
+static int expect_number(void)
 {
     if (token->kind != TK_NUM)
     {
@@ -37,7 +37,7 @@ static int expect_number()
 }
 
 // 次のトークンが入力の末尾の場合、真を返す。
-static bool at_eof()
+static bool at_eof(void)
 {
     return token->kind == TK_EOF;
 }
@@ -69,22 +69,22 @@ static Node *mul(void);
 static Node *unary(void);
 static Node *primary(void);
 
-Node *parse()
+Node *parse(void)
 {
     return expr();
 }
 
-static Node *expr()
+static Node *expr(void)
 {
     Node *node = mul();
 
     while (1)
     {
-        if (consume('+'))
+        if (consume(TK_PLUS))
         {
             node = new_node(ND_ADD, node, mul());
         }
-        else if (consume('-'))
+        else if (consume(TK_MINUS))
         {
             node = new_node(ND_SUB, node, mul());
         }
@@ -95,17 +95,17 @@ static Node *expr()
     }
 }
 
-static Node *mul()
+static Node *mul(void)
 {
     Node *node = unary();
 
     while (1)
     {
-        if (consume('*'))
+        if (consume(TK_MUL))
         {
             node = new_node(ND_MUL, node, unary());
         }
-        else if (consume('/'))
+        else if (consume(TK_DIV))
         {
             node = new_node(ND_DIV, node, unary());
         }
@@ -116,25 +116,25 @@ static Node *mul()
     }
 }
 
-static Node *unary()
+static Node *unary(void)
 {
-    if (consume('+'))
+    if (consume(TK_PLUS))
     {
         return primary();
     }
-    if (consume('-'))
+    if (consume(TK_MINUS))
     {
         return new_node(ND_SUB, new_node_num(0), primary());
     }
     return primary();
 }
 
-static Node *primary()
+static Node *primary(void)
 {
-    if (consume('('))
+    if (consume(TK_LPAREN))
     {
         Node *node = expr();
-        expect(')');
+        expect(TK_RPAREN);
         return node;
     }
 
