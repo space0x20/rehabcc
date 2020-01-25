@@ -1,35 +1,44 @@
 #include "rehabcc.h"
 
+static void emit(char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    printf("  ");
+    vprintf(fmt, ap);
+    printf("\n");
+}
+
 void generate(Node *node)
 {
     if (node->kind == ND_NUM)
     {
-        printf("  push %d\n", node->val);
+        emit("push %d", node->val);
         return;
     }
 
     generate(node->lhs);
     generate(node->rhs);
 
-    printf("  pop rdi\n");
-    printf("  pop rax\n");
+    emit("pop rdi");
+    emit("pop rax");
 
     switch (node->kind)
     {
     case ND_ADD:
-        printf("  add rax, rdi\n");
+        emit("add rax, rdi");
         break;
     case ND_SUB:
-        printf("  sub rax, rdi\n");
+        emit("sub rax, rdi");
         break;
     case ND_MUL:
-        printf("  imul rax, rdi\n");
+        emit("imul rax, rdi");
         break;
     case ND_DIV:
-        printf("  cqo\n");      // 64 bit の rax の値を 128 bit に伸ばして rdx と rax にセットする
-        printf("  idiv rdi\n"); // rdx と rax を合わせた 128 bit の数値を rdi で割り算する
+        emit("cqo");      // 64 bit の rax の値を 128 bit に伸ばして rdx と rax にセットする
+        emit("idiv rdi"); // rdx と rax を合わせた 128 bit の数値を rdi で割り算する
         break;
     }
 
-    printf("  push rax\n");
+    emit("push rax");
 }
