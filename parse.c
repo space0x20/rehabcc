@@ -126,7 +126,7 @@ static Node *new_node_num(int val)
 // add        = mul ("+" mul | "-" mul)*
 // mul        = primary ("*" primary | "/" primary)*
 // unary      = ("+" | "-")? primary
-// primary    = num | ident | "(" expr ")"
+// primary    = num | ident ("(" ")")? | "(" expr ")"
 
 static void program(void);
 static Node *stmt(void);
@@ -357,9 +357,17 @@ static Node *primary(void)
     Token *tok = consume_ident();
     if (tok)
     {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_LVAR;
+        if (peek(TK_LPAREN))
+        {
+            expect(TK_LPAREN);
+            Node *node = new_node(ND_FUNCALL);
+            node->func = calloc(tok->len + 1, sizeof(char));
+            strncpy(node->func, tok->str, tok->len);
+            expect(TK_RPAREN);
+            return node;
+        }
 
+        Node *node = new_node(ND_LVAR);
         LVar *lvar = find_lvar(tok);
         if (lvar)
         {

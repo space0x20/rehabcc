@@ -142,6 +142,19 @@ static void gen(Node *node)
         return;
     }
 
+    if (node->kind == ND_FUNCALL)
+    {
+        int label = get_label();
+        // call 命令の時点で rsp を 16 バイト境界に揃える
+        emit("mov rax, rsp");
+        emit("and rax, 15");
+        emit("je .Lcall%d", label);
+        emit("sub rsp, 8");
+        println(".Lcall%d:", label);
+        emit("call %s", node->func);
+        return;
+    }
+
     gen(node->lhs);
     gen(node->rhs);
 

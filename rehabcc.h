@@ -100,6 +100,7 @@ typedef enum
     ND_WHILE,
     ND_FOR,
     ND_BLOCK,
+    ND_FUNCALL,
     ND_LVAR, // ローカル変数
 } NodeKind;
 
@@ -130,6 +131,9 @@ struct Node
 
     // kind = ND_LVAR の場合に使う
     LVar *lvar;
+
+    // kind = ND_FUNCALL
+    char *func;
 };
 
 // rehabcc.c ////////////////////////////////////
