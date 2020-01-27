@@ -89,10 +89,16 @@ static LVar *find_lvar(Token *tok)
     return NULL;
 }
 
-static Node *new_node(NodeKind kind, Node *lhs, Node *rhs)
+static Node *new_node(NodeKind kind)
 {
     Node *node = calloc(1, sizeof(Node));
     node->kind = kind;
+    return node;
+}
+
+static Node *new_node_binop(NodeKind kind, Node *lhs, Node *rhs)
+{
+    Node *node = new_node(kind);
     node->lhs = lhs;
     node->rhs = rhs;
     return node;
@@ -100,8 +106,7 @@ static Node *new_node(NodeKind kind, Node *lhs, Node *rhs)
 
 static Node *new_node_num(int val)
 {
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_NUM;
+    Node *node = new_node(ND_NUM);
     node->val = val;
     return node;
 }
@@ -151,8 +156,7 @@ static Node *stmt(void)
 {
     if (consume(TK_RETURN))
     {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_RETURN;
+        Node *node = new_node(ND_RETURN);
         node->ret = expr();
         expect(TK_SCOLON);
         return node;
@@ -160,8 +164,7 @@ static Node *stmt(void)
 
     if (consume(TK_IF))
     {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_IF;
+        Node *node = new_node(ND_IF);
         expect(TK_LPAREN);
         node->cond = expr();
         expect(TK_RPAREN);
@@ -172,8 +175,7 @@ static Node *stmt(void)
 
     if (consume(TK_WHILE))
     {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_WHILE;
+        Node *node = new_node(ND_WHILE);
         expect(TK_LPAREN);
         node->cond = expr();
         expect(TK_RPAREN);
@@ -183,8 +185,7 @@ static Node *stmt(void)
 
     if (consume(TK_FOR))
     {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_FOR;
+        Node *node = new_node(ND_FOR);
         expect(TK_LPAREN);
         if (!peek(TK_SCOLON))
         {
@@ -220,7 +221,7 @@ static Node *assign(void)
     Node *node = equality();
     if (consume(TK_ASSIGN))
     {
-        node = new_node(ND_ASSIGN, node, assign());
+        node = new_node_binop(ND_ASSIGN, node, assign());
     }
     return node;
 }
@@ -233,11 +234,11 @@ static Node *equality(void)
     {
         if (consume(TK_EQ))
         {
-            node = new_node(ND_EQ, node, relational());
+            node = new_node_binop(ND_EQ, node, relational());
         }
         else if (consume(TK_NE))
         {
-            node = new_node(ND_NE, node, relational());
+            node = new_node_binop(ND_NE, node, relational());
         }
         else
         {
@@ -254,19 +255,19 @@ static Node *relational(void)
     {
         if (consume(TK_LT))
         {
-            node = new_node(ND_LT, node, add());
+            node = new_node_binop(ND_LT, node, add());
         }
         else if (consume(TK_LE))
         {
-            node = new_node(ND_LE, node, add());
+            node = new_node_binop(ND_LE, node, add());
         }
         else if (consume(TK_GT))
         {
-            node = new_node(ND_LT, add(), node);
+            node = new_node_binop(ND_LT, add(), node);
         }
         else if (consume(TK_GE))
         {
-            node = new_node(ND_LE, add(), node);
+            node = new_node_binop(ND_LE, add(), node);
         }
         else
         {
@@ -283,11 +284,11 @@ static Node *add(void)
     {
         if (consume(TK_PLUS))
         {
-            node = new_node(ND_ADD, node, mul());
+            node = new_node_binop(ND_ADD, node, mul());
         }
         else if (consume(TK_MINUS))
         {
-            node = new_node(ND_SUB, node, mul());
+            node = new_node_binop(ND_SUB, node, mul());
         }
         else
         {
@@ -304,11 +305,11 @@ static Node *mul(void)
     {
         if (consume(TK_MUL))
         {
-            node = new_node(ND_MUL, node, unary());
+            node = new_node_binop(ND_MUL, node, unary());
         }
         else if (consume(TK_DIV))
         {
-            node = new_node(ND_DIV, node, unary());
+            node = new_node_binop(ND_DIV, node, unary());
         }
         else
         {
@@ -325,7 +326,7 @@ static Node *unary(void)
     }
     if (consume(TK_MINUS))
     {
-        return new_node(ND_SUB, new_node_num(0), primary());
+        return new_node_binop(ND_SUB, new_node_num(0), primary());
     }
     return primary();
 }
