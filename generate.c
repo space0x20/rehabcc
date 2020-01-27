@@ -94,6 +94,20 @@ static void gen(Node *node)
         return;
     }
 
+    if (node->kind == ND_WHILE)
+    {
+        int label = get_label();
+        println(".Lbegin%d:", label);
+        gen(node->cond);
+        emit("pop rax");
+        emit("cmp rax, 0");
+        emit("je .Lend%d", label);
+        gen(node->stmt);
+        emit("jmp .Lbegin%d", label);
+        println(".Lend%d:", label);
+        return;
+    }
+
     gen(node->lhs);
     gen(node->rhs);
 

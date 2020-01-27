@@ -104,6 +104,7 @@ static Node *new_node_num(int val)
 // program    = stmt*
 // stmt       = expr ";"
 //            | "if" "(" expr ")" stmt ("else" stmt)?
+//            | "while" "(" expr ")" stmt
 //            | "return" expr ";"
 // expr       = assign
 // assign     = equality ("=" assign)?
@@ -160,6 +161,17 @@ static Node *stmt(void)
         expect(TK_RPAREN);
         node->then = stmt();
         node->els = consume(TK_ELSE) ? stmt() : NULL;
+        return node;
+    }
+
+    if (consume(TK_WHILE))
+    {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_WHILE;
+        expect(TK_LPAREN);
+        node->cond = expr();
+        expect(TK_RPAREN);
+        node->stmt = stmt();
         return node;
     }
 
