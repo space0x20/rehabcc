@@ -62,6 +62,8 @@ try 1 'if (1) return 1; return 2;'
 try 2 'if (0) return 1; return 2;'
 try 1 'if (1) return 1; else return 2; return 3;'
 try 2 'if (0) return 1; else return 2; return 3;'
+try 2 'if (0) return 1; else if (1) return 2; else return 3; return 4;'
+try 3 'if (0) return 1; else if (0) return 2; else return 3; return 4;'
 
 echo OK
 rm -f tmp tmp.s
