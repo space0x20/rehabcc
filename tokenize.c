@@ -29,6 +29,8 @@ static TokenMap symbols[] = {
 
 static TokenMap keywords[] = {
     {TK_RETURN, "return"},
+    {TK_IF, "if"},
+    {TK_ELSE, "else"},
     {TK_EOF, ""}, // 最後においておくこと
 };
 // clang-format on

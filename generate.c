@@ -17,6 +17,13 @@ static void println(char *fmt, ...)
     printf("\n");
 }
 
+static int get_label()
+{
+    static int label = 0;
+    label++;
+    return label;
+}
+
 // ノードを左辺値として評価して、スタックにプッシュする
 // 左辺値として評価できない場合はエラーとする
 static void gen_lval(Node *node)
@@ -60,6 +67,30 @@ static void gen(Node *node)
         emit("mov rsp, rbp");
         emit("pop rbp");
         emit("ret");
+        return;
+    }
+
+    if (node->kind == ND_IF)
+    {
+        int label = get_label();
+        gen(node->cond);
+        emit("pop rax");
+        emit("cmp rax, 0");
+        if (node->els == NULL)
+        {
+            emit("je .Lend%d", label);
+            gen(node->then);
+            println(".Lend%d:", label);
+        }
+        else
+        {
+            emit("je .Lelse%d", label);
+            gen(node->then);
+            emit("jmp .Lend%d", label);
+            println(".Lelse%d:", label);
+            gen(node->els);
+            println(".Lend%d:", label);
+        }
         return;
     }
 

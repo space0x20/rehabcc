@@ -57,5 +57,11 @@ try 3 'foo = 1; bar = 2; foo + bar;'
 try 3 'foo = 1; bar = 2; return foo + bar;'
 try 3 'foo = 1; bar = 2; return foo + bar; return 42;'
 
+# ステップ12
+try 1 'if (1) return 1; return 2;'
+try 2 'if (0) return 1; return 2;'
+try 1 'if (1) return 1; else return 2; return 3;'
+try 2 'if (0) return 1; else return 2; return 3;'
+
 echo OK
 rm -f tmp tmp.s
