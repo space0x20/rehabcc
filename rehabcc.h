@@ -1,9 +1,24 @@
 #include <ctype.h>
+#include <memory.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// util.c ///////////////////////////////////////
+
+typedef struct Vector Vector;
+
+struct Vector
+{
+    void **data;
+    int size;
+    int cap;
+};
+
+Vector *new_vector(void);
+void push_back(Vector *vec, void *data);
 
 // Token ////////////////////////////////////////
 
@@ -16,6 +31,8 @@ typedef enum
     TK_DIV,    // /
     TK_LPAREN, // (
     TK_RPAREN, // )
+    TK_LBRACE, // {
+    TK_RBRACE, // }
     TK_EQ,     // ==
     TK_NE,     // !=
     TK_LT,     // <
@@ -82,6 +99,7 @@ typedef enum
     ND_IF,
     ND_WHILE,
     ND_FOR,
+    ND_BLOCK,
     ND_LVAR, // ローカル変数
 } NodeKind;
 
@@ -106,6 +124,9 @@ struct Node
     Node *stmt;
     Node *init;
     Node *update;
+
+    // kind = ND_BLOCK
+    Vector *stmts;
 
     // kind = ND_LVAR の場合に使う
     LVar *lvar;

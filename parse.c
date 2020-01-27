@@ -114,6 +114,7 @@ static Node *new_node_num(int val)
 // 文法
 // program    = stmt*
 // stmt       = expr ";"
+//            | "{" stmt* "}"
 //            | "if" "(" expr ")" stmt ("else" stmt)?
 //            | "while" "(" expr ")" stmt
 //            | "for" "(" expr? ";" expr? ";" expr? ")" stmt
@@ -204,6 +205,18 @@ static Node *stmt(void)
         }
         expect(TK_RPAREN);
         node->stmt = stmt();
+        return node;
+    }
+
+    if (consume(TK_LBRACE))
+    {
+        Node *node = new_node(ND_BLOCK);
+        node->stmts = new_vector();
+        while (!peek(TK_RBRACE))
+        {
+            push_back(node->stmts, (void *)stmt());
+        }
+        expect(TK_RBRACE);
         return node;
     }
 

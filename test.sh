@@ -71,5 +71,8 @@ try 5 'x = 0; for (; x < 5; x = x + 1) 0; return x;'
 try 5 'for (x = 0; ; x = x + 1) if (x == 5) return x;'
 try 5 'for (x = 0; x < 5;) x = x + 1; return x;'
 
+# ステップ13
+try 5 'if (1) { x = 5; return x; } return 0;'
+
 echo OK
 rm -f tmp tmp.s

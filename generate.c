@@ -133,6 +133,15 @@ static void gen(Node *node)
         return;
     }
 
+    if (node->kind == ND_BLOCK)
+    {
+        for (int i = 0; i < node->stmts->size; i++)
+        {
+            gen((Node *)(node->stmts->data[i]));
+        }
+        return;
+    }
+
     gen(node->lhs);
     gen(node->rhs);
 
