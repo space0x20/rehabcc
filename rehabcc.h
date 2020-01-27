@@ -28,6 +28,7 @@ typedef enum
     TK_IF,     // if
     TK_ELSE,   // else
     TK_WHILE,  // while
+    TK_FOR,    // for
     TK_NUM,    // 整数
     TK_IDENT,  // 識別子
     TK_EOF,    // 入力終わり
@@ -80,6 +81,7 @@ typedef enum
     ND_RETURN,
     ND_IF,
     ND_WHILE,
+    ND_FOR,
     ND_LVAR, // ローカル変数
 } NodeKind;
 
@@ -97,10 +99,13 @@ struct Node
 
     // if (cond) { then } else { els }
     // while (cond) { stmt }
+    // for (init; cond; update) { stmt }
     Node *cond;
     Node *then;
     Node *els;
     Node *stmt;
+    Node *init;
+    Node *update;
 
     // kind = ND_LVAR の場合に使う
     LVar *lvar;

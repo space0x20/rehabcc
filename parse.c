@@ -57,6 +57,12 @@ static bool at_eof(void)
     return token->kind == TK_EOF;
 }
 
+// 次のトークンが与えられたトークンかどうかをチェックする
+static bool peek(TokenKind kind)
+{
+    return token->kind == kind;
+}
+
 // ローカル変数を追加する
 static LVar *add_lvar(Token *tok)
 {
@@ -170,6 +176,30 @@ static Node *stmt(void)
         node->kind = ND_WHILE;
         expect(TK_LPAREN);
         node->cond = expr();
+        expect(TK_RPAREN);
+        node->stmt = stmt();
+        return node;
+    }
+
+    if (consume(TK_FOR))
+    {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_FOR;
+        expect(TK_LPAREN);
+        if (!peek(TK_SCOLON))
+        {
+            node->init = expr();
+        }
+        expect(TK_SCOLON);
+        if (!peek(TK_SCOLON))
+        {
+            node->cond = expr();
+        }
+        expect(TK_SCOLON);
+        if (!peek(TK_RPAREN))
+        {
+            node->update = expr();
+        }
         expect(TK_RPAREN);
         node->stmt = stmt();
         return node;

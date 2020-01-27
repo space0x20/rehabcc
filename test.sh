@@ -66,6 +66,10 @@ try 2 'if (0) return 1; else if (1) return 2; else return 3; return 4;'
 try 3 'if (0) return 1; else if (0) return 2; else return 3; return 4;'
 
 try 5 'x = 0; while (x < 5) x = x + 1; return x;'
+try 5 'for (x = 0; x < 5; x = x + 1) 0; return x;'
+try 5 'x = 0; for (; x < 5; x = x + 1) 0; return x;'
+try 5 'for (x = 0; ; x = x + 1) if (x == 5) return x;'
+try 5 'for (x = 0; x < 5;) x = x + 1; return x;'
 
 echo OK
 rm -f tmp tmp.s

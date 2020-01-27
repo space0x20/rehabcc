@@ -108,6 +108,31 @@ static void gen(Node *node)
         return;
     }
 
+    if (node->kind == ND_FOR)
+    {
+        int label = get_label();
+        if (node->init)
+        {
+            gen(node->init);
+        }
+        println(".Lbegin%d:", label);
+        if (node->cond)
+        {
+            gen(node->cond);
+            emit("pop rax");
+            emit("cmp rax, 0");
+            emit("je .Lend%d", label);
+        }
+        gen(node->stmt);
+        if (node->update)
+        {
+            gen(node->update);
+        }
+        emit("jmp .Lbegin%d", label);
+        println(".Lend%d:", label);
+        return;
+    }
+
     gen(node->lhs);
     gen(node->rhs);
 
