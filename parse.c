@@ -126,7 +126,11 @@ static Node *new_node_num(int val)
 // add        = mul ("+" mul | "-" mul)*
 // mul        = primary ("*" primary | "/" primary)*
 // unary      = ("+" | "-")? primary
-// primary    = num | ident ("(" ")")? | "(" expr ")"
+// primary    = num
+//            | ident "(" arglist? ")" ... 関数呼び出し
+//            | ident                  ... 変数
+//            | "(" expr ")"
+// arglist    = expr ("," arglist)*
 
 static void program(void);
 static Node *stmt(void);
@@ -138,6 +142,7 @@ static Node *add(void);
 static Node *mul(void);
 static Node *unary(void);
 static Node *primary(void);
+static Vector *arglist(void);
 
 void parse(void)
 {
@@ -357,13 +362,20 @@ static Node *primary(void)
     Token *tok = consume_ident();
     if (tok)
     {
-        if (peek(TK_LPAREN))
+        if (consume(TK_LPAREN))
         {
-            expect(TK_LPAREN);
             Node *node = new_node(ND_FUNCALL);
             node->func = calloc(tok->len + 1, sizeof(char));
             strncpy(node->func, tok->str, tok->len);
-            expect(TK_RPAREN);
+            if (consume(TK_RPAREN))
+            {
+                node->args = new_vector();
+            }
+            else
+            {
+                node->args = arglist();
+                expect(TK_RPAREN);
+            }
             return node;
         }
 
@@ -382,4 +394,15 @@ static Node *primary(void)
     }
 
     return new_node_num(expect_number());
+}
+
+static Vector *arglist(void)
+{
+    Vector *args = new_vector();
+    push_back(args, expr());
+    while (consume(TK_COLON))
+    {
+        push_back(args, expr());
+    }
+    return args;
 }

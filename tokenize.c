@@ -25,6 +25,7 @@ static TokenMap symbols[] = {
     {TK_GE, ">="},
     {TK_GT, ">"},
     {TK_ASSIGN, "="},
+    {TK_COLON, ","},
     {TK_SCOLON, ";"},
     {TK_EOF, ""},  // 最後においておくこと
 };

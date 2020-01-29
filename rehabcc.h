@@ -40,6 +40,7 @@ typedef enum
     TK_GT,     // >
     TK_GE,     // >=
     TK_ASSIGN, // =
+    TK_COLON,  // ,
     TK_SCOLON, // ;
     TK_RETURN, // return
     TK_IF,     // if
@@ -134,6 +135,7 @@ struct Node
 
     // kind = ND_FUNCALL
     char *func;
+    Vector *args;
 };
 
 // rehabcc.c ////////////////////////////////////

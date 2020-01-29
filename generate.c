@@ -1,5 +1,7 @@
 #include "rehabcc.h"
 
+static char *regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 static void emit(char *fmt, ...)
 {
     va_list ap;
@@ -145,6 +147,18 @@ static void gen(Node *node)
     if (node->kind == ND_FUNCALL)
     {
         int label = get_label();
+        // 引数をレジスタに載せる
+        for (int i = 0; i < node->args->size; i++)
+        {
+            if (i == 6)
+            {
+                // まだ6個までしか渡せない
+                break;
+            }
+            gen(node->args->data[i]); // スタックトップに引数を評価した値が来る
+            emit("pop rax");
+            emit("mov %s, rax", regs[i]);
+        }
         // call 命令の時点で rsp を 16 バイト境界に揃える
         emit("mov rax, rsp");
         emit("and rax, 15");
