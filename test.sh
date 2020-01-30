@@ -76,7 +76,8 @@ try 5 'main() { if (1) { x = 5; return x; } return 0; }'
 
 # ステップ15
 try 42 'identity(n) { return n; } main() { return identity(42); }'
-
+try 3 'identity(n) { return n; } main() { return identity(1) + identity(2); }'
+try 5 'fib(n) { if (n <= 1) { return 1; } return fib(n-2) + fib(n-1); } main() { return fib(4); }'
 
 echo OK
 rm -f tmp tmp.s

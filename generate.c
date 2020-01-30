@@ -164,8 +164,12 @@ static void gen(Node *node)
         emit("and rax, 15");
         emit("je .Lcall%d", label);
         emit("sub rsp, 8");
+        emit("call %s", node->func);
+        emit("add rsp, 8");
+        emit("jmp .Lend%d", label);
         println(".Lcall%d:", label);
         emit("call %s", node->func);
+        println(".Lend%d:", label);
         emit("push rax"); // 関数の戻り値をスタックトップに載せる
         return;
     }
@@ -187,7 +191,6 @@ static void gen(Node *node)
         for (int i = 0; i < node->stmts->size; i++)
         {
             gen(node->stmts->data[i]);
-            emit("pop rax"); // スタックトップに残る値を取り除く
         }
 
         // 関数のエピローグ
