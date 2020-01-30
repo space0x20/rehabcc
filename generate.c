@@ -252,24 +252,4 @@ void generate(void)
     {
         gen(code[i]);
     }
-
-    // println("main:");
-
-    // // プロローグ
-    // // 変数26個分をスタックに確保
-    // emit("push rbp");
-    // emit("mov rbp, rsp");
-    // emit("sub rsp, 208");
-
-    // // 最初の式から順にコード生成
-    // for (int i = 0; code[i] != NULL; i++)
-    // {
-    //     gen(code[i]);
-    //     emit("pop rax"); // 途中式の評価結果は逐次捨てる
-    // }
-
-    // // エピローグ
-    // emit("mov rsp, rbp");
-    // emit("pop rbp");
-    // emit("ret");
 }
