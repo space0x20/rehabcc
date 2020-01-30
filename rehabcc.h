@@ -102,6 +102,7 @@ typedef enum
     ND_FOR,
     ND_BLOCK,
     ND_FUNCALL,
+    ND_FUNCDEF,
     ND_LVAR, // ローカル変数
 } NodeKind;
 
@@ -133,9 +134,14 @@ struct Node
     // kind = ND_LVAR の場合に使う
     LVar *lvar;
 
+    // kind = ND_FUNC
+    char *funcname;
+    Vector *params; // 変数名のベクトル (型情報は今はない)
+    LVar *locals;
+
     // kind = ND_FUNCALL
     char *func;
-    Vector *args;
+    Vector *args; // vector of Node (expr)
 };
 
 // rehabcc.c ////////////////////////////////////
@@ -159,6 +165,7 @@ void error_at(char *loc, char *fmt, ...);
 // tokenize.c ///////////////////////////////////
 
 void tokenize(void);
+char *copy_str(Token *tok);
 
 // parse.c //////////////////////////////////////
 

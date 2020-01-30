@@ -166,6 +166,34 @@ static void gen(Node *node)
         emit("sub rsp, 8");
         println(".Lcall%d:", label);
         emit("call %s", node->func);
+        emit("push rax"); // 関数の戻り値をスタックトップに載せる
+        return;
+    }
+
+    if (node->kind == ND_FUNCDEF)
+    {
+        println("%s:", node->funcname);
+        emit("push rbp");
+        emit("mov rbp, rsp");
+        emit("sub rsp, %d", node->locals->offset);
+
+        // 引数をスタックにコピーする
+        for (int i = 0; i < node->params->size; i++)
+        {
+            emit("mov [rbp - %d], %s", 8 * (i + 1), regs[i]);
+        }
+
+        // 本体のコード生成
+        for (int i = 0; i < node->stmts->size; i++)
+        {
+            gen(node->stmts->data[i]);
+            emit("pop rax"); // スタックトップに残る値を取り除く
+        }
+
+        // 関数のエピローグ
+        emit("mov rsp, rbp");
+        emit("pop rbp");
+        emit("ret");
         return;
     }
 
@@ -220,23 +248,28 @@ void generate(void)
     // アセンブリの前半部分
     println(".intel_syntax noprefix");
     println(".global main");
-    println("main:");
-
-    // プロローグ
-    // 変数26個分をスタックに確保
-    emit("push rbp");
-    emit("mov rbp, rsp");
-    emit("sub rsp, 208");
-
-    // 最初の式から順にコード生成
     for (int i = 0; code[i] != NULL; i++)
     {
         gen(code[i]);
-        emit("pop rax"); // 途中式の評価結果は逐次捨てる
     }
 
-    // エピローグ
-    emit("mov rsp, rbp");
-    emit("pop rbp");
-    emit("ret");
+    // println("main:");
+
+    // // プロローグ
+    // // 変数26個分をスタックに確保
+    // emit("push rbp");
+    // emit("mov rbp, rsp");
+    // emit("sub rsp, 208");
+
+    // // 最初の式から順にコード生成
+    // for (int i = 0; code[i] != NULL; i++)
+    // {
+    //     gen(code[i]);
+    //     emit("pop rax"); // 途中式の評価結果は逐次捨てる
+    // }
+
+    // // エピローグ
+    // emit("mov rsp, rbp");
+    // emit("pop rbp");
+    // emit("ret");
 }

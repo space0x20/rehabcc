@@ -11,7 +11,7 @@ test: rehabcc
 	./test.sh
 
 clean:
-	rm -f rehabcc *.o tmp*
+	rm -f rehabcc *.o *.s tmp*
 
 .PHONY: test clean
 

@@ -57,6 +57,16 @@ static bool at_eof(void)
     return token->kind == TK_EOF;
 }
 
+static void init_lvar(void)
+{
+    LVar *lvar = calloc(1, sizeof(LVar));
+    lvar->next = NULL;
+    lvar->name = NULL;
+    lvar->len = 0;
+    lvar->offset = 0;
+    locals = lvar;
+}
+
 // ローカル変数を追加する
 static LVar *add_lvar(Token *tok)
 {
@@ -106,9 +116,11 @@ static Node *new_node_num(int val)
 }
 
 // 文法
-// program    = stmt*
+// program    = funcdef*
+// funcdef    = ident "(" paramlist? ")" block
+// block      = "{" stmt* "}"
 // stmt       = expr ";"
-//            | "{" stmt* "}"
+//            | block
 //            | "if" "(" expr ")" stmt ("else" stmt)?
 //            | "while" "(" expr ")" stmt
 //            | "for" "(" expr? ";" expr? ";" expr? ")" stmt
@@ -124,9 +136,11 @@ static Node *new_node_num(int val)
 //            | ident "(" arglist? ")" ... 関数呼び出し
 //            | ident                  ... 変数
 //            | "(" expr ")"
-// arglist    = expr ("," arglist)*
+// arglist    = expr ("," expr)*
+// paramlist  = ident ("," ident)*
 
 static void program(void);
+static Node *funcdef(void);
 static Node *stmt(void);
 static Node *expr(void);
 static Node *assign(void);
@@ -148,9 +162,53 @@ static void program(void)
     int i = 0;
     while (!at_eof())
     {
-        code[i++] = stmt();
+        code[i++] = funcdef();
     }
     code[i] = NULL;
+}
+
+static Node *funcdef(void)
+{
+    Node *node = new_node(ND_FUNCDEF);
+
+    // 関数名
+    Token *tok = consume_ident();
+    node->funcname = calloc(tok->len + 1, sizeof(char));
+    strncpy(node->funcname, tok->str, tok->len);
+
+    // 引数
+    node->params = new_vector();
+    init_lvar();
+    expect(TK_LPAREN);
+    while (!consume(TK_RPAREN))
+    {
+        Token *tok = consume_ident();
+        char *name = copy_str(tok);
+        push_back(node->params, name);
+
+        LVar *lvar = find_lvar(tok);
+        if (!lvar)
+        {
+            add_lvar(tok);
+        }
+
+        if (!consume(TK_COLON))
+        {
+            expect(TK_RPAREN);
+            break;
+        }
+    }
+
+    // 本体
+    node->stmts = new_vector();
+    expect(TK_LBRACE);
+    while (!consume(TK_RBRACE))
+    {
+        push_back(node->stmts, stmt());
+    }
+
+    node->locals = locals;
+    return node;
 }
 
 static Node *stmt(void)

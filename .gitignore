@@ -1,4 +1,5 @@
 rehabcc
+tmp*
 
 # Prerequisites
 *.d
