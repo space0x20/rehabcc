@@ -111,7 +111,7 @@ static Node *new_node_num(int val)
 
 // 文法
 // program    = funcdef*
-// funcdef    = ident "(" paramlist? ")" block
+// funcdef    = "int" ident "(" paramlist? ")" block
 // block      = "{" stmt* "}"
 // stmt       = expr ";"
 //            | block
@@ -135,7 +135,7 @@ static Node *new_node_num(int val)
 //            | ident                  ... 変数
 //            | "(" expr ")"
 // arglist    = expr ("," expr)*
-// paramlist  = ident ("," ident)*
+// paramlist  = "int" ident ("," "int" ident)*
 
 static void program(void);
 static Node *funcdef(void);
@@ -168,6 +168,8 @@ static Node *funcdef(void)
 {
     Node *node = new_node(ND_FUNCDEF);
 
+    expect(TK_INT);
+
     // 関数名
     Token *tok = consume_ident();
     node->funcname = calloc(tok->len + 1, sizeof(char));
@@ -178,6 +180,8 @@ static Node *funcdef(void)
     init_lvar();
     expect(TK_LPAREN);
     while (!consume(TK_RPAREN)) {
+        expect(TK_INT);
+
         Token *tok = consume_ident();
         char *name = copy_str(tok);
         push_back(node->params, name);
