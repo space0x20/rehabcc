@@ -85,6 +85,7 @@ try 42 'int main() { int x; int y; int z; x = 3; y = 42; z = &x - 8; return *z; 
 
 # ステップ18
 try 42 'int main() { int x; int *y; y = &x; *y = 42; return x; }'
+try 42 'int main() { int x; int *y; int **z; y = &x; z = &y; **z = 42; return x; }'
 
 echo OK
 rm -f tmp tmp.s
