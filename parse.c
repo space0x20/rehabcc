@@ -403,8 +403,7 @@ static Node *primary(void)
             node->lvar = lvar;
         }
         else {
-            lvar = add_lvar(tok);
-            node->lvar = lvar;
+            error_at(tok->str, "定義されていない変数を使っています");
         }
         return node;
     }
