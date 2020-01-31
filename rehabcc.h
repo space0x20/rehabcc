@@ -46,6 +46,7 @@ typedef enum {
     TK_ELSE,   // else
     TK_WHILE,  // while
     TK_FOR,    // for
+    TK_INT,    // int
     TK_NUM,    // 整数
     TK_IDENT,  // 識別子
     TK_EOF,    // 入力終わり
@@ -99,9 +100,10 @@ typedef enum {
     ND_BLOCK,
     ND_FUNCALL,
     ND_FUNCDEF,
-    ND_ADDR,  // リファレンス &
-    ND_DEREF, // デリファレンス *
-    ND_LVAR,  // ローカル変数
+    ND_ADDR,    // リファレンス &
+    ND_DEREF,   // デリファレンス *
+    ND_VARDECL, // 変数宣言
+    ND_LVAR,    // ローカル変数
 } NodeKind;
 
 typedef struct Node Node;

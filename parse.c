@@ -119,6 +119,7 @@ static Node *new_node_num(int val)
 //            | "while" "(" expr ")" stmt
 //            | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //            | "return" expr ";"
+//            | "int" ident;
 // expr       = assign
 // assign     = equality ("=" assign)?
 // equality   = relational ("==" relational | "!=" relational)*
@@ -256,6 +257,17 @@ static Node *stmt(void)
         while (!consume(TK_RBRACE)) {
             push_back(node->stmts, (void *)stmt());
         }
+        return node;
+    }
+
+    if (consume(TK_INT)) {
+        Node *node = new_node(ND_VARDECL);
+        Token *tok = consume_ident();
+        LVar *lvar = find_lvar(tok);
+        if (!lvar) {
+            add_lvar(tok);
+        }
+        expect(TK_SCOLON);
         return node;
     }
 

@@ -37,6 +37,7 @@ static TokenMap keywords[] = {
     {TK_ELSE, "else"},
     {TK_WHILE, "while"},
     {TK_FOR, "for"},
+    {TK_INT, "int"},
     {TK_EOF, ""}, // 最後においておくこと
 };
 // clang-format on

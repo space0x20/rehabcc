@@ -180,6 +180,9 @@ static void gen(Node *node)
         println("  push rax");
         return;
     }
+    case ND_VARDECL: {
+        return;
+    }
     }
 
     gen(node->lhs);
