@@ -25,6 +25,27 @@ static Token *consume_ident(void)
     return NULL;
 }
 
+// 着目しているトークンが型の場合には、その型を返す
+// そうでない場合には NULL ポインタを返す
+static Type *consume_type(void)
+{
+    if (!consume(TK_INT)) {
+        return NULL;
+    }
+
+    Type *type = calloc(1, sizeof(Type));
+    type->type = T_INT;
+
+    while (consume(TK_MUL)) {
+        Type *new_type = calloc(1, sizeof(Type));
+        type->type = T_PTR;
+        type->ptr_to = type;
+        type = new_type;
+    }
+
+    return type;
+}
+
 // 次のトークンが期待している種類のものであれば、トークンを一つ進める。
 // それ以外の場合であればエラーを出す。
 static void expect(TokenKind kind)
@@ -64,13 +85,14 @@ static void init_lvar(void)
 }
 
 // ローカル変数を追加する
-static LVar *add_lvar(Token *tok)
+static LVar *add_lvar(Token *tok, Type *type)
 {
     LVar *lvar = calloc(1, sizeof(LVar));
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
     lvar->offset = locals->offset + 8;
+    lvar->type = type;
     locals = lvar;
     return lvar;
 }
@@ -111,7 +133,7 @@ static Node *new_node_num(int val)
 
 // 文法
 // program    = funcdef*
-// funcdef    = "int" ident "(" paramlist? ")" block
+// funcdef    = type ident "(" paramlist? ")" block
 // block      = "{" stmt* "}"
 // stmt       = expr ";"
 //            | block
@@ -119,7 +141,7 @@ static Node *new_node_num(int val)
 //            | "while" "(" expr ")" stmt
 //            | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //            | "return" expr ";"
-//            | "int" ident;
+//            | type ident;
 // expr       = assign
 // assign     = equality ("=" assign)?
 // equality   = relational ("==" relational | "!=" relational)*
@@ -135,7 +157,8 @@ static Node *new_node_num(int val)
 //            | ident                  ... 変数
 //            | "(" expr ")"
 // arglist    = expr ("," expr)*
-// paramlist  = "int" ident ("," "int" ident)*
+// paramlist  = type ident ("," type ident)*
+// type       = "int" "*"*
 
 static void program(void);
 static Node *funcdef(void);
@@ -149,6 +172,7 @@ static Node *mul(void);
 static Node *unary(void);
 static Node *primary(void);
 static Vector *arglist(void);
+static Type *typedecl(void);
 
 void parse(void)
 {
@@ -168,7 +192,10 @@ static Node *funcdef(void)
 {
     Node *node = new_node(ND_FUNCDEF);
 
-    expect(TK_INT);
+    node->type = consume_type();
+    if (!node->type) {
+        error("関数の返り値型が宣言されていません");
+    }
 
     // 関数名
     Token *tok = consume_ident();
@@ -180,7 +207,10 @@ static Node *funcdef(void)
     init_lvar();
     expect(TK_LPAREN);
     while (!consume(TK_RPAREN)) {
-        expect(TK_INT);
+        Type *type = consume_type();
+        if (!type) {
+            error("仮引数の型が宣言されていません");
+        }
 
         Token *tok = consume_ident();
         char *name = copy_str(tok);
@@ -188,7 +218,7 @@ static Node *funcdef(void)
 
         LVar *lvar = find_lvar(tok);
         if (!lvar) {
-            add_lvar(tok);
+            add_lvar(tok, type);
         }
 
         if (!consume(TK_COLON)) {
@@ -264,12 +294,13 @@ static Node *stmt(void)
         return node;
     }
 
-    if (consume(TK_INT)) {
+    Type *type = consume_type();
+    if (type) {
         Node *node = new_node(ND_VARDECL);
         Token *tok = consume_ident();
         LVar *lvar = find_lvar(tok);
         if (!lvar) {
-            add_lvar(tok);
+            add_lvar(tok, type);
         }
         expect(TK_SCOLON);
         return node;

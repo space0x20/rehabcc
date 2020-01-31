@@ -83,5 +83,8 @@ try 5 'int fib(int n) { if (n <= 1) { return 1; } return fib(n-2) + fib(n-1); } 
 try 42 'int main() { int x; int y; x = 42; y = &x; return *y; }'
 try 42 'int main() { int x; int y; int z; x = 3; y = 42; z = &x - 8; return *z; }'
 
+# ステップ18
+try 42 'int main() { int x; int *y; y = &x; *y = 42; return x; }'
+
 echo OK
 rm -f tmp tmp.s

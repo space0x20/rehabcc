@@ -17,17 +17,28 @@ static int get_label()
     return label;
 }
 
+static void gen(Node *);
+
 // ノードを左辺値として評価して、スタックにプッシュする
 // 左辺値として評価できない場合はエラーとする
 static void gen_lval(Node *node)
 {
-    if (node->kind != ND_LVAR) {
-        error("代入の左辺値が変数ではありません");
+    switch (node->kind) {
+    case ND_LVAR: {
+        // 変数には RBP - offset でアクセスできる
+        println("  mov rax, rbp");
+        println("  sub rax, %d", node->lvar->offset);
+        println("  push rax");
+        return;
     }
-    // 変数には RBP - offset でアクセスできる
-    println("  mov rax, rbp");
-    println("  sub rax, %d", node->lvar->offset);
-    println("  push rax");
+    case ND_DEREF: {
+        // *x = 42; を評価する場合、変数 x に格納されている値＝アドレスがほしい。
+        // なので、x を右辺値として評価すればいい。
+        gen(node->unary); // スタックトップにほしいアドレスが来る
+        return;
+    }
+    }
+    error("左辺値として評価できません");
 }
 
 static void gen(Node *node)

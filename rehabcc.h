@@ -68,6 +68,20 @@ struct Token {
     int val;
 };
 
+// Type /////////////////////////////////////////
+
+typedef enum {
+    T_INT,
+    T_PTR,
+} BasicType;
+
+typedef struct Type Type;
+
+struct Type {
+    BasicType type;
+    Type *ptr_to;
+};
+
 // LVar /////////////////////////////////////////
 
 typedef struct LVar LVar;
@@ -77,6 +91,7 @@ struct LVar {
     char *name; // ローカル変数名
     int len;    // 変数名の長さ
     int offset; // RBP からのオフセット
+    Type *type; // 変数の型
 };
 
 // Node /////////////////////////////////////////
@@ -146,6 +161,10 @@ struct Node {
 
     // kind = ND_DEREF
     Node *unary;
+
+    // kind = ND_FUNCDECL
+    // kind = ND_LVAR
+    Type *type;
 };
 
 // rehabcc.c ////////////////////////////////////
