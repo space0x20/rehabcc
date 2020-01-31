@@ -33,17 +33,19 @@ static void gen_lval(Node *node)
 static void gen(Node *node)
 {
     switch (node->kind) {
-    case ND_NUM:
+    case ND_NUM: {
         println("  push %d", node->val);
         return;
-    case ND_LVAR:
+    }
+    case ND_LVAR: {
         // 変数を右辺値として評価する
         gen_lval(node); // スタックトップに変数のアドレスが来る
         println("  pop rax");
         println("  mov rax, [rax]"); // rax に変数の値を読み出す
         println("  push rax");
         return;
-    case ND_ASSIGN:
+    }
+    case ND_ASSIGN: {
         gen_lval(node->lhs);
         gen(node->rhs);
         println("  pop rdi"); // 右辺値
@@ -51,7 +53,8 @@ static void gen(Node *node)
         println("  mov [rax], rdi");
         println("  push rdi"); // 代入式の評価値は右辺値
         return;
-    case ND_RETURN:
+    }
+    case ND_RETURN: {
         gen(node->ret); // return 式の値を評価、スタックトップに式の値が残る
         println("  pop rax");
         // 呼び出し元の関数フレームに戻る
@@ -60,8 +63,7 @@ static void gen(Node *node)
         println("  ret");
         return;
     }
-
-    if (node->kind == ND_IF) {
+    case ND_IF: {
         int label = get_label();
         gen(node->cond);
         println("  pop rax");
@@ -81,8 +83,7 @@ static void gen(Node *node)
         }
         return;
     }
-
-    if (node->kind == ND_WHILE) {
+    case ND_WHILE: {
         int label = get_label();
         println(".Lbegin%d:", label);
         gen(node->cond);
@@ -94,8 +95,7 @@ static void gen(Node *node)
         println(".Lend%d:", label);
         return;
     }
-
-    if (node->kind == ND_FOR) {
+    case ND_FOR: {
         int label = get_label();
         if (node->init) {
             gen(node->init);
@@ -115,15 +115,13 @@ static void gen(Node *node)
         println(".Lend%d:", label);
         return;
     }
-
-    if (node->kind == ND_BLOCK) {
+    case ND_BLOCK: {
         for (int i = 0; i < node->stmts->size; i++) {
-            gen((Node *)(node->stmts->data[i]));
+            gen(node->stmts->data[i]);
         }
         return;
     }
-
-    if (node->kind == ND_FUNCALL) {
+    case ND_FUNCALL: {
         int label = get_label();
         // 引数をレジスタに載せる
         for (int i = 0; i < node->args->size; i++) {
@@ -149,8 +147,7 @@ static void gen(Node *node)
         println("  push rax"); // 関数の戻り値をスタックトップに載せる
         return;
     }
-
-    if (node->kind == ND_FUNCDEF) {
+    case ND_FUNCDEF: {
         println("%s:", node->funcname);
         println("  push rbp");
         println("  mov rbp, rsp");
@@ -171,6 +168,7 @@ static void gen(Node *node)
         println("  pop rbp");
         println("  ret");
         return;
+    }
     }
 
     gen(node->lhs);
