@@ -11,8 +11,7 @@ Vector *new_vector(void)
 
 void push_back(Vector *vec, void *data)
 {
-    if (vec->size == vec->cap)
-    {
+    if (vec->size == vec->cap) {
         vec->cap *= 2;
         vec->data = realloc(vec->data, vec->cap);
     }

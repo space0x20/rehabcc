@@ -10,8 +10,7 @@
 
 typedef struct Vector Vector;
 
-struct Vector
-{
+struct Vector {
     void **data;
     int size;
     int cap;
@@ -23,8 +22,7 @@ void push_back(Vector *vec, void *data);
 // Token ////////////////////////////////////////
 
 // トークンの種類
-typedef enum
-{
+typedef enum {
     TK_PLUS,   // +
     TK_MINUS,  // -
     TK_MUL,    // *
@@ -56,8 +54,7 @@ typedef enum
 
 typedef struct Token Token;
 
-struct Token
-{
+struct Token {
     TokenKind kind;
     Token *next;
 
@@ -73,8 +70,7 @@ struct Token
 
 typedef struct LVar LVar;
 
-struct LVar
-{
+struct LVar {
     LVar *next; // 次のローカル変数またはNULL
     char *name; // ローカル変数名
     int len;    // 変数名の長さ
@@ -84,8 +80,7 @@ struct LVar
 // Node /////////////////////////////////////////
 
 // 抽象構文木のノードの種類
-typedef enum
-{
+typedef enum {
     ND_ADD,
     ND_SUB,
     ND_MUL,
@@ -108,8 +103,7 @@ typedef enum
 
 typedef struct Node Node;
 
-struct Node
-{
+struct Node {
     NodeKind kind;
     Node *lhs;
     Node *rhs;

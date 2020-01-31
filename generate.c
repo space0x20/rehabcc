@@ -21,8 +21,7 @@ static int get_label()
 // 左辺値として評価できない場合はエラーとする
 static void gen_lval(Node *node)
 {
-    if (node->kind != ND_LVAR)
-    {
+    if (node->kind != ND_LVAR) {
         error("代入の左辺値が変数ではありません");
     }
     // 変数には RBP - offset でアクセスできる
@@ -33,8 +32,7 @@ static void gen_lval(Node *node)
 
 static void gen(Node *node)
 {
-    switch (node->kind)
-    {
+    switch (node->kind) {
     case ND_NUM:
         println("  push %d", node->val);
         return;
@@ -63,20 +61,17 @@ static void gen(Node *node)
         return;
     }
 
-    if (node->kind == ND_IF)
-    {
+    if (node->kind == ND_IF) {
         int label = get_label();
         gen(node->cond);
         println("  pop rax");
         println("  cmp rax, 0");
-        if (node->els == NULL)
-        {
+        if (node->els == NULL) {
             println("  je .Lend%d", label);
             gen(node->then);
             println(".Lend%d:", label);
         }
-        else
-        {
+        else {
             println("  je .Lelse%d", label);
             gen(node->then);
             println("  jmp .Lend%d", label);
@@ -87,8 +82,7 @@ static void gen(Node *node)
         return;
     }
 
-    if (node->kind == ND_WHILE)
-    {
+    if (node->kind == ND_WHILE) {
         int label = get_label();
         println(".Lbegin%d:", label);
         gen(node->cond);
@@ -101,24 +95,20 @@ static void gen(Node *node)
         return;
     }
 
-    if (node->kind == ND_FOR)
-    {
+    if (node->kind == ND_FOR) {
         int label = get_label();
-        if (node->init)
-        {
+        if (node->init) {
             gen(node->init);
         }
         println(".Lbegin%d:", label);
-        if (node->cond)
-        {
+        if (node->cond) {
             gen(node->cond);
             println("  pop rax");
             println("  cmp rax, 0");
             println("  je .Lend%d", label);
         }
         gen(node->stmt);
-        if (node->update)
-        {
+        if (node->update) {
             gen(node->update);
         }
         println("  jmp .Lbegin%d", label);
@@ -126,23 +116,18 @@ static void gen(Node *node)
         return;
     }
 
-    if (node->kind == ND_BLOCK)
-    {
-        for (int i = 0; i < node->stmts->size; i++)
-        {
+    if (node->kind == ND_BLOCK) {
+        for (int i = 0; i < node->stmts->size; i++) {
             gen((Node *)(node->stmts->data[i]));
         }
         return;
     }
 
-    if (node->kind == ND_FUNCALL)
-    {
+    if (node->kind == ND_FUNCALL) {
         int label = get_label();
         // 引数をレジスタに載せる
-        for (int i = 0; i < node->args->size; i++)
-        {
-            if (i == 6)
-            {
+        for (int i = 0; i < node->args->size; i++) {
+            if (i == 6) {
                 // まだ6個までしか渡せない
                 break;
             }
@@ -165,22 +150,19 @@ static void gen(Node *node)
         return;
     }
 
-    if (node->kind == ND_FUNCDEF)
-    {
+    if (node->kind == ND_FUNCDEF) {
         println("%s:", node->funcname);
         println("  push rbp");
         println("  mov rbp, rsp");
         println("  sub rsp, %d", node->locals->offset);
 
         // 引数をスタックにコピーする
-        for (int i = 0; i < node->params->size; i++)
-        {
+        for (int i = 0; i < node->params->size; i++) {
             println("  mov [rbp - %d], %s", 8 * (i + 1), regs[i]);
         }
 
         // 本体のコード生成
-        for (int i = 0; i < node->stmts->size; i++)
-        {
+        for (int i = 0; i < node->stmts->size; i++) {
             gen(node->stmts->data[i]);
         }
 
@@ -197,8 +179,7 @@ static void gen(Node *node)
     println("  pop rdi");
     println("  pop rax");
 
-    switch (node->kind)
-    {
+    switch (node->kind) {
     case ND_ADD:
         println("  add rax, rdi");
         break;
@@ -242,8 +223,7 @@ void generate(void)
     // アセンブリの前半部分
     println(".intel_syntax noprefix");
     println(".global main");
-    for (int i = 0; code[i] != NULL; i++)
-    {
+    for (int i = 0; code[i] != NULL; i++) {
         gen(code[i]);
     }
 }

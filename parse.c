@@ -4,8 +4,7 @@
 // そうでない場合は、偽を返す。
 static bool consume(TokenKind kind)
 {
-    if (token->kind != kind)
-    {
+    if (token->kind != kind) {
         return false;
     }
     token = token->next;
@@ -18,8 +17,7 @@ static bool consume(TokenKind kind)
 // この場合着目しているトークンは進めない。
 static Token *consume_ident(void)
 {
-    if (token->kind == TK_IDENT)
-    {
+    if (token->kind == TK_IDENT) {
         Token *tok = token;
         token = token->next;
         return tok;
@@ -31,8 +29,7 @@ static Token *consume_ident(void)
 // それ以外の場合であればエラーを出す。
 static void expect(TokenKind kind)
 {
-    if (token->kind != kind)
-    {
+    if (token->kind != kind) {
         error_at(token->str, "%d ではありません", kind);
     }
     token = token->next;
@@ -42,8 +39,7 @@ static void expect(TokenKind kind)
 // それ以外の場合はエラーを出す。
 static int expect_number(void)
 {
-    if (token->kind != TK_NUM)
-    {
+    if (token->kind != TK_NUM) {
         error_at(token->str, "数ではありません");
     }
     int val = token->val;
@@ -83,10 +79,8 @@ static LVar *add_lvar(Token *tok)
 // 見つかれば LVar へのポインタ、見つからなければ NULL
 static LVar *find_lvar(Token *tok)
 {
-    for (LVar *lvar = locals; lvar != NULL; lvar = lvar->next)
-    {
-        if (lvar->len == tok->len && !memcmp(lvar->name, tok->str, lvar->len))
-        {
+    for (LVar *lvar = locals; lvar != NULL; lvar = lvar->next) {
+        if (lvar->len == tok->len && !memcmp(lvar->name, tok->str, lvar->len)) {
             return lvar;
         }
     }
@@ -160,8 +154,7 @@ void parse(void)
 static void program(void)
 {
     int i = 0;
-    while (!at_eof())
-    {
+    while (!at_eof()) {
         code[i++] = funcdef();
     }
     code[i] = NULL;
@@ -180,20 +173,17 @@ static Node *funcdef(void)
     node->params = new_vector();
     init_lvar();
     expect(TK_LPAREN);
-    while (!consume(TK_RPAREN))
-    {
+    while (!consume(TK_RPAREN)) {
         Token *tok = consume_ident();
         char *name = copy_str(tok);
         push_back(node->params, name);
 
         LVar *lvar = find_lvar(tok);
-        if (!lvar)
-        {
+        if (!lvar) {
             add_lvar(tok);
         }
 
-        if (!consume(TK_COLON))
-        {
+        if (!consume(TK_COLON)) {
             expect(TK_RPAREN);
             break;
         }
@@ -202,8 +192,7 @@ static Node *funcdef(void)
     // 本体
     node->stmts = new_vector();
     expect(TK_LBRACE);
-    while (!consume(TK_RBRACE))
-    {
+    while (!consume(TK_RBRACE)) {
         push_back(node->stmts, stmt());
     }
 
@@ -213,16 +202,14 @@ static Node *funcdef(void)
 
 static Node *stmt(void)
 {
-    if (consume(TK_RETURN))
-    {
+    if (consume(TK_RETURN)) {
         Node *node = new_node(ND_RETURN);
         node->ret = expr();
         expect(TK_SCOLON);
         return node;
     }
 
-    if (consume(TK_IF))
-    {
+    if (consume(TK_IF)) {
         Node *node = new_node(ND_IF);
         expect(TK_LPAREN);
         node->cond = expr();
@@ -232,8 +219,7 @@ static Node *stmt(void)
         return node;
     }
 
-    if (consume(TK_WHILE))
-    {
+    if (consume(TK_WHILE)) {
         Node *node = new_node(ND_WHILE);
         expect(TK_LPAREN);
         node->cond = expr();
@@ -242,22 +228,18 @@ static Node *stmt(void)
         return node;
     }
 
-    if (consume(TK_FOR))
-    {
+    if (consume(TK_FOR)) {
         Node *node = new_node(ND_FOR);
         expect(TK_LPAREN);
-        if (!consume(TK_SCOLON))
-        {
+        if (!consume(TK_SCOLON)) {
             node->init = expr();
             expect(TK_SCOLON);
         }
-        if (!consume(TK_SCOLON))
-        {
+        if (!consume(TK_SCOLON)) {
             node->cond = expr();
             expect(TK_SCOLON);
         }
-        if (!consume(TK_RPAREN))
-        {
+        if (!consume(TK_RPAREN)) {
             node->update = expr();
             expect(TK_RPAREN);
         }
@@ -265,12 +247,10 @@ static Node *stmt(void)
         return node;
     }
 
-    if (consume(TK_LBRACE))
-    {
+    if (consume(TK_LBRACE)) {
         Node *node = new_node(ND_BLOCK);
         node->stmts = new_vector();
-        while (!consume(TK_RBRACE))
-        {
+        while (!consume(TK_RBRACE)) {
             push_back(node->stmts, (void *)stmt());
         }
         return node;
@@ -289,8 +269,7 @@ static Node *expr(void)
 static Node *assign(void)
 {
     Node *node = equality();
-    if (consume(TK_ASSIGN))
-    {
+    if (consume(TK_ASSIGN)) {
         node = new_node_binop(ND_ASSIGN, node, assign());
     }
     return node;
@@ -300,18 +279,14 @@ static Node *equality(void)
 {
     Node *node = relational();
 
-    while (1)
-    {
-        if (consume(TK_EQ))
-        {
+    while (1) {
+        if (consume(TK_EQ)) {
             node = new_node_binop(ND_EQ, node, relational());
         }
-        else if (consume(TK_NE))
-        {
+        else if (consume(TK_NE)) {
             node = new_node_binop(ND_NE, node, relational());
         }
-        else
-        {
+        else {
             return node;
         }
     }
@@ -321,26 +296,20 @@ static Node *relational(void)
 {
     Node *node = add();
 
-    while (1)
-    {
-        if (consume(TK_LT))
-        {
+    while (1) {
+        if (consume(TK_LT)) {
             node = new_node_binop(ND_LT, node, add());
         }
-        else if (consume(TK_LE))
-        {
+        else if (consume(TK_LE)) {
             node = new_node_binop(ND_LE, node, add());
         }
-        else if (consume(TK_GT))
-        {
+        else if (consume(TK_GT)) {
             node = new_node_binop(ND_LT, add(), node);
         }
-        else if (consume(TK_GE))
-        {
+        else if (consume(TK_GE)) {
             node = new_node_binop(ND_LE, add(), node);
         }
-        else
-        {
+        else {
             return node;
         }
     }
@@ -350,18 +319,14 @@ static Node *add(void)
 {
     Node *node = mul();
 
-    while (1)
-    {
-        if (consume(TK_PLUS))
-        {
+    while (1) {
+        if (consume(TK_PLUS)) {
             node = new_node_binop(ND_ADD, node, mul());
         }
-        else if (consume(TK_MINUS))
-        {
+        else if (consume(TK_MINUS)) {
             node = new_node_binop(ND_SUB, node, mul());
         }
-        else
-        {
+        else {
             return node;
         }
     }
@@ -371,18 +336,14 @@ static Node *mul(void)
 {
     Node *node = unary();
 
-    while (1)
-    {
-        if (consume(TK_MUL))
-        {
+    while (1) {
+        if (consume(TK_MUL)) {
             node = new_node_binop(ND_MUL, node, unary());
         }
-        else if (consume(TK_DIV))
-        {
+        else if (consume(TK_DIV)) {
             node = new_node_binop(ND_DIV, node, unary());
         }
-        else
-        {
+        else {
             return node;
         }
     }
@@ -390,12 +351,10 @@ static Node *mul(void)
 
 static Node *unary(void)
 {
-    if (consume(TK_PLUS))
-    {
+    if (consume(TK_PLUS)) {
         return primary();
     }
-    if (consume(TK_MINUS))
-    {
+    if (consume(TK_MINUS)) {
         return new_node_binop(ND_SUB, new_node_num(0), primary());
     }
     return primary();
@@ -403,27 +362,22 @@ static Node *unary(void)
 
 static Node *primary(void)
 {
-    if (consume(TK_LPAREN))
-    {
+    if (consume(TK_LPAREN)) {
         Node *node = expr();
         expect(TK_RPAREN);
         return node;
     }
 
     Token *tok = consume_ident();
-    if (tok)
-    {
-        if (consume(TK_LPAREN))
-        {
+    if (tok) {
+        if (consume(TK_LPAREN)) {
             Node *node = new_node(ND_FUNCALL);
             node->func = calloc(tok->len + 1, sizeof(char));
             strncpy(node->func, tok->str, tok->len);
-            if (consume(TK_RPAREN))
-            {
+            if (consume(TK_RPAREN)) {
                 node->args = new_vector();
             }
-            else
-            {
+            else {
                 node->args = arglist();
                 expect(TK_RPAREN);
             }
@@ -432,12 +386,10 @@ static Node *primary(void)
 
         Node *node = new_node(ND_LVAR);
         LVar *lvar = find_lvar(tok);
-        if (lvar)
-        {
+        if (lvar) {
             node->lvar = lvar;
         }
-        else
-        {
+        else {
             lvar = add_lvar(tok);
             node->lvar = lvar;
         }
@@ -451,8 +403,7 @@ static Vector *arglist(void)
 {
     Vector *args = new_vector();
     push_back(args, expr());
-    while (consume(TK_COLON))
-    {
+    while (consume(TK_COLON)) {
         push_back(args, expr());
     }
     return args;

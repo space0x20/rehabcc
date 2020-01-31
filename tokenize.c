@@ -74,21 +74,17 @@ void tokenize(void)
     char *p = user_input;
 
 loop:
-    while (*p)
-    {
+    while (*p) {
         // 空白文字をスキップ
-        if (isspace(*p))
-        {
+        if (isspace(*p)) {
             p++;
             continue;
         }
 
         // 記号のトークン化
-        for (int i = 0; symbols[i].kind != TK_EOF; i++)
-        {
+        for (int i = 0; symbols[i].kind != TK_EOF; i++) {
             int len = strlen(symbols[i].str);
-            if (strncmp(p, symbols[i].str, len) == 0)
-            {
+            if (strncmp(p, symbols[i].str, len) == 0) {
                 cur = new_token(symbols[i].kind, cur, p, len);
                 p += len;
                 goto loop;
@@ -96,11 +92,9 @@ loop:
         }
 
         // キーワードのトークン化
-        for (int i = 0; keywords[i].kind != TK_EOF; i++)
-        {
+        for (int i = 0; keywords[i].kind != TK_EOF; i++) {
             int len = strlen(keywords[i].str);
-            if (strncmp(p, keywords[i].str, len) == 0 && !isident(p[len]))
-            {
+            if (strncmp(p, keywords[i].str, len) == 0 && !isident(p[len])) {
                 cur = new_token(keywords[i].kind, cur, p, len);
                 p += len;
                 goto loop;
@@ -108,19 +102,16 @@ loop:
         }
 
         // 整数トークン
-        if (isdigit(*p))
-        {
+        if (isdigit(*p)) {
             cur = new_token(TK_NUM, cur, p, 0);
             cur->val = strtol(p, &p, 10); // 10桁まで
             continue;
         }
 
         // 識別子トークン
-        if (isident(*p))
-        {
+        if (isident(*p)) {
             char *q = p;
-            while (isident(*q))
-            {
+            while (isident(*q)) {
                 q++;
             }
             int len = q - p;
