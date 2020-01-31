@@ -79,5 +79,9 @@ try 42 'identity(n) { return n; } main() { return identity(42); }'
 try 3 'identity(n) { return n; } main() { return identity(1) + identity(2); }'
 try 5 'fib(n) { if (n <= 1) { return 1; } return fib(n-2) + fib(n-1); } main() { return fib(4); }'
 
+# ステップ16
+try 42 'main() { x = 42; y = &x; return *y; }'
+try 42 'main() { x = 3; y = 42; z = &x - 8; return *z; }'
+
 echo OK
 rm -f tmp tmp.s

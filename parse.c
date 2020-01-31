@@ -125,7 +125,10 @@ static Node *new_node_num(int val)
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 // add        = mul ("+" mul | "-" mul)*
 // mul        = primary ("*" primary | "/" primary)*
-// unary      = ("+" | "-")? primary
+// unary      = "+"? primary
+//            | "-"? primary
+//            | "*" unary
+//            | "&" unary
 // primary    = num
 //            | ident "(" arglist? ")" ... 関数呼び出し
 //            | ident                  ... 変数
@@ -351,6 +354,16 @@ static Node *mul(void)
 
 static Node *unary(void)
 {
+    if (consume(TK_MUL)) {
+        Node *node = new_node(ND_DEREF);
+        node->unary = unary();
+        return node;
+    }
+    if (consume(TK_AND)) {
+        Node *node = new_node(ND_ADDR);
+        node->unary = unary();
+        return node;
+    }
     if (consume(TK_PLUS)) {
         return primary();
     }

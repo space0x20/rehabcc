@@ -169,6 +169,17 @@ static void gen(Node *node)
         println("  ret");
         return;
     }
+    case ND_ADDR: {
+        gen_lval(node->unary); // unary を左辺値として評価すればアドレスが手に入る
+        return;
+    }
+    case ND_DEREF: {
+        gen(node->unary); // スタックトップにアドレスが入る
+        println("  pop rax");
+        println("  mov rax, [rax]");
+        println("  push rax");
+        return;
+    }
     }
 
     gen(node->lhs);

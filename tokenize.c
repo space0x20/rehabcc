@@ -14,6 +14,7 @@ static TokenMap symbols[] = {
     {TK_MINUS, "-"},
     {TK_MUL, "*"},
     {TK_DIV, "/"},
+    {TK_AND, "&"},
     {TK_LPAREN, "("},
     {TK_RPAREN, ")"},
     {TK_LBRACE, "{"},

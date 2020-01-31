@@ -27,6 +27,7 @@ typedef enum {
     TK_MINUS,  // -
     TK_MUL,    // *
     TK_DIV,    // /
+    TK_AND,    // &
     TK_LPAREN, // (
     TK_RPAREN, // )
     TK_LBRACE, // {
@@ -98,7 +99,9 @@ typedef enum {
     ND_BLOCK,
     ND_FUNCALL,
     ND_FUNCDEF,
-    ND_LVAR, // ローカル変数
+    ND_ADDR,  // リファレンス &
+    ND_DEREF, // デリファレンス *
+    ND_LVAR,  // ローカル変数
 } NodeKind;
 
 typedef struct Node Node;
@@ -107,6 +110,8 @@ struct Node {
     NodeKind kind;
     Node *lhs;
     Node *rhs;
+
+    // kind = ND_NUM の場合整数値
     int val;
 
     // kind = ND_RETURN
@@ -136,6 +141,9 @@ struct Node {
     // kind = ND_FUNCALL
     char *func;
     Vector *args; // vector of Node (expr)
+
+    // kind = ND_DEREF
+    Node *unary;
 };
 
 // rehabcc.c ////////////////////////////////////
