@@ -2,15 +2,6 @@
 
 static char *regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
-static void emit(char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    printf("  ");
-    vprintf(fmt, ap);
-    printf("\n");
-}
-
 static void println(char *fmt, ...)
 {
     va_list ap;
@@ -35,9 +26,9 @@ static void gen_lval(Node *node)
         error("代入の左辺値が変数ではありません");
     }
     // 変数には RBP - offset でアクセスできる
-    emit("mov rax, rbp");
-    emit("sub rax, %d", node->lvar->offset);
-    emit("push rax");
+    println("  mov rax, rbp");
+    println("  sub rax, %d", node->lvar->offset);
+    println("  push rax");
 }
 
 static void gen(Node *node)
@@ -45,30 +36,30 @@ static void gen(Node *node)
     switch (node->kind)
     {
     case ND_NUM:
-        emit("push %d", node->val);
+        println("  push %d", node->val);
         return;
     case ND_LVAR:
         // 変数を右辺値として評価する
         gen_lval(node); // スタックトップに変数のアドレスが来る
-        emit("pop rax");
-        emit("mov rax, [rax]"); // rax に変数の値を読み出す
-        emit("push rax");
+        println("  pop rax");
+        println("  mov rax, [rax]"); // rax に変数の値を読み出す
+        println("  push rax");
         return;
     case ND_ASSIGN:
         gen_lval(node->lhs);
         gen(node->rhs);
-        emit("pop rdi"); // 右辺値
-        emit("pop rax"); // 左辺アドレス
-        emit("mov [rax], rdi");
-        emit("push rdi"); // 代入式の評価値は右辺値
+        println("  pop rdi"); // 右辺値
+        println("  pop rax"); // 左辺アドレス
+        println("  mov [rax], rdi");
+        println("  push rdi"); // 代入式の評価値は右辺値
         return;
     case ND_RETURN:
         gen(node->ret); // return 式の値を評価、スタックトップに式の値が残る
-        emit("pop rax");
+        println("  pop rax");
         // 呼び出し元の関数フレームに戻る
-        emit("mov rsp, rbp");
-        emit("pop rbp");
-        emit("ret");
+        println("  mov rsp, rbp");
+        println("  pop rbp");
+        println("  ret");
         return;
     }
 
@@ -76,19 +67,19 @@ static void gen(Node *node)
     {
         int label = get_label();
         gen(node->cond);
-        emit("pop rax");
-        emit("cmp rax, 0");
+        println("  pop rax");
+        println("  cmp rax, 0");
         if (node->els == NULL)
         {
-            emit("je .Lend%d", label);
+            println("  je .Lend%d", label);
             gen(node->then);
             println(".Lend%d:", label);
         }
         else
         {
-            emit("je .Lelse%d", label);
+            println("  je .Lelse%d", label);
             gen(node->then);
-            emit("jmp .Lend%d", label);
+            println("  jmp .Lend%d", label);
             println(".Lelse%d:", label);
             gen(node->els);
             println(".Lend%d:", label);
@@ -101,11 +92,11 @@ static void gen(Node *node)
         int label = get_label();
         println(".Lbegin%d:", label);
         gen(node->cond);
-        emit("pop rax");
-        emit("cmp rax, 0");
-        emit("je .Lend%d", label);
+        println("  pop rax");
+        println("  cmp rax, 0");
+        println("  je .Lend%d", label);
         gen(node->stmt);
-        emit("jmp .Lbegin%d", label);
+        println("  jmp .Lbegin%d", label);
         println(".Lend%d:", label);
         return;
     }
@@ -121,16 +112,16 @@ static void gen(Node *node)
         if (node->cond)
         {
             gen(node->cond);
-            emit("pop rax");
-            emit("cmp rax, 0");
-            emit("je .Lend%d", label);
+            println("  pop rax");
+            println("  cmp rax, 0");
+            println("  je .Lend%d", label);
         }
         gen(node->stmt);
         if (node->update)
         {
             gen(node->update);
         }
-        emit("jmp .Lbegin%d", label);
+        println("  jmp .Lbegin%d", label);
         println(".Lend%d:", label);
         return;
     }
@@ -156,35 +147,35 @@ static void gen(Node *node)
                 break;
             }
             gen(node->args->data[i]); // スタックトップに引数を評価した値が来る
-            emit("pop rax");
-            emit("mov %s, rax", regs[i]);
+            println("  pop rax");
+            println("  mov %s, rax", regs[i]);
         }
         // call 命令の時点で rsp を 16 バイト境界に揃える
-        emit("mov rax, rsp");
-        emit("and rax, 15");
-        emit("je .Lcall%d", label);
-        emit("sub rsp, 8");
-        emit("call %s", node->func);
-        emit("add rsp, 8");
-        emit("jmp .Lend%d", label);
+        println("  mov rax, rsp");
+        println("  and rax, 15");
+        println("  je .Lcall%d", label);
+        println("  sub rsp, 8");
+        println("  call %s", node->func);
+        println("  add rsp, 8");
+        println("  jmp .Lend%d", label);
         println(".Lcall%d:", label);
-        emit("call %s", node->func);
+        println("  call %s", node->func);
         println(".Lend%d:", label);
-        emit("push rax"); // 関数の戻り値をスタックトップに載せる
+        println("  push rax"); // 関数の戻り値をスタックトップに載せる
         return;
     }
 
     if (node->kind == ND_FUNCDEF)
     {
         println("%s:", node->funcname);
-        emit("push rbp");
-        emit("mov rbp, rsp");
-        emit("sub rsp, %d", node->locals->offset);
+        println("  push rbp");
+        println("  mov rbp, rsp");
+        println("  sub rsp, %d", node->locals->offset);
 
         // 引数をスタックにコピーする
         for (int i = 0; i < node->params->size; i++)
         {
-            emit("mov [rbp - %d], %s", 8 * (i + 1), regs[i]);
+            println("  mov [rbp - %d], %s", 8 * (i + 1), regs[i]);
         }
 
         // 本体のコード生成
@@ -194,56 +185,56 @@ static void gen(Node *node)
         }
 
         // 関数のエピローグ
-        emit("mov rsp, rbp");
-        emit("pop rbp");
-        emit("ret");
+        println("  mov rsp, rbp");
+        println("  pop rbp");
+        println("  ret");
         return;
     }
 
     gen(node->lhs);
     gen(node->rhs);
 
-    emit("pop rdi");
-    emit("pop rax");
+    println("  pop rdi");
+    println("  pop rax");
 
     switch (node->kind)
     {
     case ND_ADD:
-        emit("add rax, rdi");
+        println("  add rax, rdi");
         break;
     case ND_SUB:
-        emit("sub rax, rdi");
+        println("  sub rax, rdi");
         break;
     case ND_MUL:
-        emit("imul rax, rdi");
+        println("  imul rax, rdi");
         break;
     case ND_DIV:
-        emit("cqo");      // 64 bit の rax の値を 128 bit に伸ばして rdx と rax にセットする
-        emit("idiv rdi"); // rdx と rax を合わせた 128 bit の数値を rdi で割り算する
+        println("  cqo");      // 64 bit の rax の値を 128 bit に伸ばして rdx と rax にセットする
+        println("  idiv rdi"); // rdx と rax を合わせた 128 bit の数値を rdi で割り算する
         break;
     case ND_EQ:
-        emit("cmp rax, rdi");  // rax と rdi の比較
-        emit("sete al");       // cmp の結果を al レジスタ (rax の下位 8 bit) に設定する
-        emit("movzb rax, al"); // rax の上位 56 bit をゼロで埋める
+        println("  cmp rax, rdi");  // rax と rdi の比較
+        println("  sete al");       // cmp の結果を al レジスタ (rax の下位 8 bit) に設定する
+        println("  movzb rax, al"); // rax の上位 56 bit をゼロで埋める
         break;
     case ND_NE:
-        emit("cmp rax, rdi");
-        emit("setne al");
-        emit("movzb rax, al");
+        println("  cmp rax, rdi");
+        println("  setne al");
+        println("  movzb rax, al");
         break;
     case ND_LT:
-        emit("cmp rax, rdi");
-        emit("setl al");
-        emit("movzb rax, al");
+        println("  cmp rax, rdi");
+        println("  setl al");
+        println("  movzb rax, al");
         break;
     case ND_LE:
-        emit("cmp rax, rdi");
-        emit("setle al");
-        emit("movzb rax, al");
+        println("  cmp rax, rdi");
+        println("  setle al");
+        println("  movzb rax, al");
         break;
     }
 
-    emit("push rax");
+    println("  push rax");
 }
 
 void generate(void)
