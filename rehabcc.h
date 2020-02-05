@@ -119,6 +119,7 @@ typedef enum {
     ND_DEREF,   // デリファレンス *
     ND_VARDECL, // 変数宣言
     ND_LVAR,    // ローカル変数
+    ND_ADD_PTR, // ポインタの足し算
 } NodeKind;
 
 typedef struct Node Node;
@@ -165,6 +166,10 @@ struct Node {
     // kind = ND_FUNCDECL
     // kind = ND_LVAR
     Type *type;
+
+    // kind = ND_ADD_PTR
+    // ポインタと整数の足し算の場合、データ型のサイズ
+    int type_size;
 };
 
 // rehabcc.c ////////////////////////////////////

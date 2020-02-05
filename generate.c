@@ -236,6 +236,11 @@ static void gen(Node *node)
         println("  setle al");
         println("  movzb rax, al");
         break;
+    case ND_ADD_PTR: {
+        println("  imul rdi, %d", node->type_size);
+        println("  add rax, rdi");
+        break;
+    }
     }
 
     println("  push rax");

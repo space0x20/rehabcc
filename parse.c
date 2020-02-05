@@ -38,8 +38,8 @@ static Type *consume_type(void)
 
     while (consume(TK_MUL)) {
         Type *new_type = calloc(1, sizeof(Type));
-        type->type = T_PTR;
-        type->ptr_to = type;
+        new_type->type = T_PTR;
+        new_type->ptr_to = type;
         type = new_type;
     }
 
@@ -371,7 +371,19 @@ static Node *add(void)
 
     while (1) {
         if (consume(TK_PLUS)) {
-            node = new_node_binop(ND_ADD, node, mul());
+            if (node->kind == ND_LVAR && node->lvar->type->type == T_PTR) {
+                node = new_node_binop(ND_ADD_PTR, node, mul());
+                Type *to = node->lhs->lvar->type->ptr_to;
+                if (to->type == T_PTR) {
+                    node->type_size = 8;
+                }
+                else if (to->type == T_INT) {
+                    node->type_size = 4;
+                }
+            }
+            else {
+                node = new_node_binop(ND_ADD, node, mul());
+            }
         }
         else if (consume(TK_MINUS)) {
             node = new_node_binop(ND_SUB, node, mul());
