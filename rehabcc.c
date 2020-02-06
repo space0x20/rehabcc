@@ -7,7 +7,7 @@ Token *token;
 char *user_input;
 
 // 構文木列
-Node *code[100];
+Ast *code[100];
 
 // ローカル変数
 LVar *locals;

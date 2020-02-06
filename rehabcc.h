@@ -121,30 +121,30 @@ typedef enum {
     ND_VARDECL,  // 変数宣言
     ND_LVAR,     // ローカル変数
     ND_ADD_PTR,  // ポインタの足し算
-} NodeKind;
+} AstKind;
 
-typedef struct Node Node;
+typedef struct Ast Ast;
 
-struct Node {
-    NodeKind kind;
-    Node *lhs;
-    Node *rhs;
+struct Ast {
+    AstKind kind;
+    Ast *lhs;
+    Ast *rhs;
 
     // kind = ND_NUM の場合整数値
     int val;
 
     // kind = ND_RETURN
-    Node *ret;
+    Ast *ret;
 
     // if (cond) { then } else { els }
     // while (cond) { stmt }
     // for (init; cond; update) { stmt }
-    Node *cond;
-    Node *then;
-    Node *els;
-    Node *stmt;
-    Node *init;
-    Node *update;
+    Ast *cond;
+    Ast *then;
+    Ast *els;
+    Ast *stmt;
+    Ast *init;
+    Ast *update;
 
     // kind = ND_BLOCK
     Vector *stmts;
@@ -162,7 +162,7 @@ struct Node {
     Vector *args; // vector of Node (expr)
 
     // kind = ND_DEREF
-    Node *unary;
+    Ast *unary;
 
     // kind = ND_FUNCDECL
     // kind = ND_LVAR
@@ -179,7 +179,7 @@ struct Node {
 extern char *user_input;
 
 // 構文木列
-extern Node *code[];
+extern Ast *code[];
 
 // ローカル変数の連結リスト
 extern LVar *locals;

@@ -2,6 +2,7 @@ rehabcc
 rehabcc_debug
 tmp*
 core
+.vscode
 
 # Prerequisites
 *.d

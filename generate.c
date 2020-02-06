@@ -17,11 +17,11 @@ static int get_label()
     return label;
 }
 
-static void gen(Node *);
+static void gen(Ast *);
 
 // ノードを左辺値として評価して、スタックにプッシュする
 // 左辺値として評価できない場合はエラーとする
-static void gen_lval(Node *node)
+static void gen_lval(Ast *node)
 {
     switch (node->kind) {
     case ND_LVAR: {
@@ -41,7 +41,7 @@ static void gen_lval(Node *node)
     error("左辺値として評価できません");
 }
 
-static void gen(Node *node)
+static void gen(Ast *node)
 {
     switch (node->kind) {
     case ND_NUM: {
