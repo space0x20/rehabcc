@@ -351,11 +351,10 @@ static Ast *parse_mul(void)
 
 static Ast *parse_unary(void)
 {
+    Ast *lhs;
     if (consume_token(TK_MUL)) {
-        Ast *node = new_node(AST_DEREF);
-        node->unary = parse_unary();
-        node->type = deref_type(node->unary->type);
-        return node;
+        lhs = parse_unary();
+        return new_ast_unary(AST_DEREF, deref_type(lhs->type), lhs);
     }
     if (consume_token(TK_AND)) {
         Ast *node = new_node(AST_ADDR);

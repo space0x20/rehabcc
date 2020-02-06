@@ -176,6 +176,7 @@ struct Ast {
 };
 
 Ast *new_ast(AstKind, Type *);
+Ast *new_ast_unary(AstKind, Type *, Ast *);
 
 // rehabcc.c ////////////////////////////////////
 

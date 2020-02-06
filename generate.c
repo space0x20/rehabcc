@@ -34,7 +34,7 @@ static void gen_lval(Ast *node)
     case AST_DEREF: {
         // *x = 42; を評価する場合、変数 x に格納されている値＝アドレスがほしい。
         // なので、x を右辺値として評価すればいい。
-        gen(node->unary); // スタックトップにほしいアドレスが来る
+        gen(node->lhs); // スタックトップにほしいアドレスが来る
         return;
     }
     }
@@ -185,7 +185,7 @@ static void gen(Ast *node)
         return;
     }
     case AST_DEREF: {
-        gen(node->unary); // スタックトップにアドレスが入る
+        gen(node->lhs); // スタックトップにアドレスが入る
         println("  pop rax");
         println("  mov rax, [rax]");
         println("  push rax");
