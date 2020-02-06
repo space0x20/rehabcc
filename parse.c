@@ -1,26 +1,5 @@
 #include "rehabcc.h"
 
-// 着目しているトークンが型の場合には、その型を返す
-// そうでない場合には NULL ポインタを返す
-static Type *consume_type(void)
-{
-    if (!consume_token(TK_INT)) {
-        return NULL;
-    }
-
-    Type *type = calloc(1, sizeof(Type));
-    type->type = T_INT;
-
-    while (consume_token(TK_MUL)) {
-        Type *new_type = calloc(1, sizeof(Type));
-        new_type->type = T_PTR;
-        new_type->ptr_to = type;
-        type = new_type;
-    }
-
-    return type;
-}
-
 static void init_lvar(void)
 {
     LVar *lvar = calloc(1, sizeof(LVar));
@@ -132,39 +111,40 @@ static Node *new_node_num(int val)
 // paramlist  = type ident ("," type ident)*
 // type       = "int" "*"*
 
-static void program(void);
-static Node *funcdef(void);
-static Node *stmt(void);
-static Node *expr(void);
-static Node *assign(void);
-static Node *equality(void);
-static Node *relational(void);
-static Node *add(void);
-static Node *mul(void);
-static Node *unary(void);
-static Node *primary(void);
-static Vector *arglist(void);
-static Type *typedecl(void);
+static void parse_program(void);
+static Node *parse_function(void);
+static Node *parse_stmt(void);
+static Node *parse_expr(void);
+static Node *parse_assign(void);
+static Node *parse_equality(void);
+static Node *parse_relational(void);
+static Node *parse_add(void);
+static Node *parse_mul(void);
+static Node *parse_unary(void);
+static Node *parse_primary(void);
+
+static Vector *parse_arglist(void);
+static Type *parse_type(void);
 
 void parse(void)
 {
-    program();
+    parse_program();
 }
 
-static void program(void)
+static void parse_program(void)
 {
     int i = 0;
     while (!consume_token(TK_EOF)) {
-        code[i++] = funcdef();
+        code[i++] = parse_function();
     }
     code[i] = NULL;
 }
 
-static Node *funcdef(void)
+static Node *parse_function(void)
 {
     Node *node = new_node(ND_FUNCDEF);
 
-    node->type = consume_type();
+    node->type = parse_type();
     if (!node->type) {
         error("関数の返り値型が宣言されていません");
     }
@@ -179,7 +159,7 @@ static Node *funcdef(void)
     init_lvar();
     expect_token(TK_LPAREN);
     while (!consume_token(TK_RPAREN)) {
-        Type *type = consume_type();
+        Type *type = parse_type();
         if (!type) {
             error("仮引数の型が宣言されていません");
         }
@@ -203,18 +183,18 @@ static Node *funcdef(void)
     node->stmts = new_vector();
     expect_token(TK_LBRACE);
     while (!consume_token(TK_RBRACE)) {
-        push_back(node->stmts, stmt());
+        push_back(node->stmts, parse_stmt());
     }
 
     node->locals = locals;
     return node;
 }
 
-static Node *stmt(void)
+static Node *parse_stmt(void)
 {
     if (consume_token(TK_RETURN)) {
         Node *node = new_node(ND_RETURN);
-        node->ret = expr();
+        node->ret = parse_expr();
         expect_token(TK_SCOLON);
         return node;
     }
@@ -222,19 +202,19 @@ static Node *stmt(void)
     if (consume_token(TK_IF)) {
         Node *node = new_node(ND_IF);
         expect_token(TK_LPAREN);
-        node->cond = expr();
+        node->cond = parse_expr();
         expect_token(TK_RPAREN);
-        node->then = stmt();
-        node->els = consume_token(TK_ELSE) ? stmt() : NULL;
+        node->then = parse_stmt();
+        node->els = consume_token(TK_ELSE) ? parse_stmt() : NULL;
         return node;
     }
 
     if (consume_token(TK_WHILE)) {
         Node *node = new_node(ND_WHILE);
         expect_token(TK_LPAREN);
-        node->cond = expr();
+        node->cond = parse_expr();
         expect_token(TK_RPAREN);
-        node->stmt = stmt();
+        node->stmt = parse_stmt();
         return node;
     }
 
@@ -242,18 +222,18 @@ static Node *stmt(void)
         Node *node = new_node(ND_FOR);
         expect_token(TK_LPAREN);
         if (!consume_token(TK_SCOLON)) {
-            node->init = expr();
+            node->init = parse_expr();
             expect_token(TK_SCOLON);
         }
         if (!consume_token(TK_SCOLON)) {
-            node->cond = expr();
+            node->cond = parse_expr();
             expect_token(TK_SCOLON);
         }
         if (!consume_token(TK_RPAREN)) {
-            node->update = expr();
+            node->update = parse_expr();
             expect_token(TK_RPAREN);
         }
-        node->stmt = stmt();
+        node->stmt = parse_stmt();
         return node;
     }
 
@@ -261,12 +241,12 @@ static Node *stmt(void)
         Node *node = new_node(ND_BLOCK);
         node->stmts = new_vector();
         while (!consume_token(TK_RBRACE)) {
-            push_back(node->stmts, (void *)stmt());
+            push_back(node->stmts, (void *)parse_stmt());
         }
         return node;
     }
 
-    Type *type = consume_type();
+    Type *type = parse_type();
     if (type) {
         Node *node = new_node(ND_VARDECL);
         Token *tok = consume_token(TK_IDENT);
@@ -278,37 +258,37 @@ static Node *stmt(void)
         return node;
     }
 
-    Node *node = expr();
+    Node *node = parse_expr();
     expect_token(TK_SCOLON);
     return node;
 }
 
-static Node *expr(void)
+static Node *parse_expr(void)
 {
-    return assign();
+    return parse_assign();
 }
 
-static Node *assign(void)
+static Node *parse_assign(void)
 {
-    Node *node = equality();
+    Node *node = parse_equality();
     if (consume_token(TK_ASSIGN)) {
-        node = new_node_binop(ND_ASSIGN, node, assign());
+        node = new_node_binop(ND_ASSIGN, node, parse_assign());
         node->type = node->lhs->type;
     }
     return node;
 }
 
-static Node *equality(void)
+static Node *parse_equality(void)
 {
-    Node *node = relational();
+    Node *node = parse_relational();
 
     while (1) {
         if (consume_token(TK_EQ)) {
-            node = new_node_binop(ND_EQ, node, relational());
+            node = new_node_binop(ND_EQ, node, parse_relational());
             node->type = type_int();
         }
         else if (consume_token(TK_NE)) {
-            node = new_node_binop(ND_NE, node, relational());
+            node = new_node_binop(ND_NE, node, parse_relational());
             node->type = type_int();
         }
         else {
@@ -317,25 +297,25 @@ static Node *equality(void)
     }
 }
 
-static Node *relational(void)
+static Node *parse_relational(void)
 {
-    Node *node = add();
+    Node *node = parse_add();
 
     while (1) {
         if (consume_token(TK_LT)) {
-            node = new_node_binop(ND_LT, node, add());
+            node = new_node_binop(ND_LT, node, parse_add());
             node->type = type_int();
         }
         else if (consume_token(TK_LE)) {
-            node = new_node_binop(ND_LE, node, add());
+            node = new_node_binop(ND_LE, node, parse_add());
             node->type = type_int();
         }
         else if (consume_token(TK_GT)) {
-            node = new_node_binop(ND_LT, add(), node);
+            node = new_node_binop(ND_LT, parse_add(), node);
             node->type = type_int();
         }
         else if (consume_token(TK_GE)) {
-            node = new_node_binop(ND_LE, add(), node);
+            node = new_node_binop(ND_LE, parse_add(), node);
             node->type = type_int();
         }
         else {
@@ -344,14 +324,14 @@ static Node *relational(void)
     }
 }
 
-static Node *add(void)
+static Node *parse_add(void)
 {
-    Node *node = mul();
+    Node *node = parse_mul();
 
     while (1) {
         if (consume_token(TK_PLUS)) {
             if (node->kind == ND_LVAR && node->lvar->type->type == T_PTR) {
-                node = new_node_binop(ND_ADD_PTR, node, mul());
+                node = new_node_binop(ND_ADD_PTR, node, parse_mul());
                 Type *to = node->lhs->lvar->type->ptr_to;
                 if (to->type == T_PTR) {
                     node->type_size = 8;
@@ -362,12 +342,12 @@ static Node *add(void)
                 node->type = node->lhs->lvar->type;
             }
             else {
-                node = new_node_binop(ND_ADD, node, mul());
+                node = new_node_binop(ND_ADD, node, parse_mul());
                 node->type = type_int();
             }
         }
         else if (consume_token(TK_MINUS)) {
-            node = new_node_binop(ND_SUB, node, mul());
+            node = new_node_binop(ND_SUB, node, parse_mul());
             node->type = type_int();
         }
         else {
@@ -376,17 +356,17 @@ static Node *add(void)
     }
 }
 
-static Node *mul(void)
+static Node *parse_mul(void)
 {
-    Node *node = unary();
+    Node *node = parse_unary();
 
     while (1) {
         if (consume_token(TK_MUL)) {
-            node = new_node_binop(ND_MUL, node, unary());
+            node = new_node_binop(ND_MUL, node, parse_unary());
             node->type = type_int();
         }
         else if (consume_token(TK_DIV)) {
-            node = new_node_binop(ND_DIV, node, unary());
+            node = new_node_binop(ND_DIV, node, parse_unary());
             node->type = type_int();
         }
         else {
@@ -395,30 +375,30 @@ static Node *mul(void)
     }
 }
 
-static Node *unary(void)
+static Node *parse_unary(void)
 {
     if (consume_token(TK_MUL)) {
         Node *node = new_node(ND_DEREF);
-        node->unary = unary();
+        node->unary = parse_unary();
         node->type = type_deref(node->unary->type);
         return node;
     }
     if (consume_token(TK_AND)) {
         Node *node = new_node(ND_ADDR);
-        node->unary = unary();
+        node->unary = parse_unary();
         node->type = type_ptr(node->unary->type);
         return node;
     }
     if (consume_token(TK_PLUS)) {
-        return primary();
+        return parse_primary();
     }
     if (consume_token(TK_MINUS)) {
-        Node *node = new_node_binop(ND_SUB, new_node_num(0), primary());
+        Node *node = new_node_binop(ND_SUB, new_node_num(0), parse_primary());
         node->type = type_int();
         return node;
     }
     if (consume_token(TK_SIZEOF)) {
-        Node *arg = unary();
+        Node *arg = parse_unary();
         int val = 0;
         switch (arg->type->type) {
         case T_INT:
@@ -432,13 +412,13 @@ static Node *unary(void)
         node->type = T_INT;
         return node;
     }
-    return primary();
+    return parse_primary();
 }
 
-static Node *primary(void)
+static Node *parse_primary(void)
 {
     if (consume_token(TK_LPAREN)) {
-        Node *node = expr();
+        Node *node = parse_expr();
         expect_token(TK_RPAREN);
         return node;
     }
@@ -453,7 +433,7 @@ static Node *primary(void)
                 node->args = new_vector();
             }
             else {
-                node->args = arglist();
+                node->args = parse_arglist();
                 expect_token(TK_RPAREN);
             }
             // Todo : 関数の戻り値型を node->type にセットする
@@ -483,12 +463,31 @@ static Node *primary(void)
     error("パーズできません");
 }
 
-static Vector *arglist(void)
+static Vector *parse_arglist(void)
 {
     Vector *args = new_vector();
-    push_back(args, expr());
+    push_back(args, parse_expr());
     while (consume_token(TK_COLON)) {
-        push_back(args, expr());
+        push_back(args, parse_expr());
     }
     return args;
+}
+
+static Type *parse_type(void)
+{
+    if (!consume_token(TK_INT)) {
+        return NULL;
+    }
+
+    Type *type = calloc(1, sizeof(Type));
+    type->type = T_INT;
+
+    while (consume_token(TK_MUL)) {
+        Type *new_type = calloc(1, sizeof(Type));
+        new_type->type = T_PTR;
+        new_type->ptr_to = type;
+        type = new_type;
+    }
+
+    return type;
 }
