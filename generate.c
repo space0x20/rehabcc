@@ -24,14 +24,14 @@ static void gen(Ast *);
 static void gen_lval(Ast *node)
 {
     switch (node->kind) {
-    case ND_LVAR: {
+    case AST_LVAR: {
         // 変数には RBP - offset でアクセスできる
         println("  mov rax, rbp");
         println("  sub rax, %d", node->lvar->offset);
         println("  push rax");
         return;
     }
-    case ND_DEREF: {
+    case AST_DEREF: {
         // *x = 42; を評価する場合、変数 x に格納されている値＝アドレスがほしい。
         // なので、x を右辺値として評価すればいい。
         gen(node->unary); // スタックトップにほしいアドレスが来る
@@ -44,11 +44,11 @@ static void gen_lval(Ast *node)
 static void gen(Ast *node)
 {
     switch (node->kind) {
-    case ND_NUM: {
+    case AST_NUM: {
         println("  push %d", node->val);
         return;
     }
-    case ND_LVAR: {
+    case AST_LVAR: {
         // 変数を右辺値として評価する
         gen_lval(node); // スタックトップに変数のアドレスが来る
         println("  pop rax");
@@ -56,7 +56,7 @@ static void gen(Ast *node)
         println("  push rax");
         return;
     }
-    case ND_ASSIGN: {
+    case AST_ASSIGN: {
         gen_lval(node->lhs);
         gen(node->rhs);
         println("  pop rdi"); // 右辺値
@@ -65,7 +65,7 @@ static void gen(Ast *node)
         println("  push rdi"); // 代入式の評価値は右辺値
         return;
     }
-    case ND_RETURN: {
+    case AST_RETURN: {
         gen(node->ret); // return 式の値を評価、スタックトップに式の値が残る
         println("  pop rax");
         // 呼び出し元の関数フレームに戻る
@@ -74,7 +74,7 @@ static void gen(Ast *node)
         println("  ret");
         return;
     }
-    case ND_IF: {
+    case AST_IF: {
         int label = get_label();
         gen(node->cond);
         println("  pop rax");
@@ -94,7 +94,7 @@ static void gen(Ast *node)
         }
         return;
     }
-    case ND_WHILE: {
+    case AST_WHILE: {
         int label = get_label();
         println(".Lbegin%d:", label);
         gen(node->cond);
@@ -106,7 +106,7 @@ static void gen(Ast *node)
         println(".Lend%d:", label);
         return;
     }
-    case ND_FOR: {
+    case AST_FOR: {
         int label = get_label();
         if (node->init) {
             gen(node->init);
@@ -126,13 +126,13 @@ static void gen(Ast *node)
         println(".Lend%d:", label);
         return;
     }
-    case ND_BLOCK: {
+    case AST_BLOCK: {
         for (int i = 0; i < node->stmts->size; i++) {
             gen(node->stmts->data[i]);
         }
         return;
     }
-    case ND_FUNCALL: {
+    case AST_FUNCALL: {
         int label = get_label();
         // 引数をレジスタに載せる
         for (int i = 0; i < node->args->size; i++) {
@@ -158,7 +158,7 @@ static void gen(Ast *node)
         println("  push rax"); // 関数の戻り値をスタックトップに載せる
         return;
     }
-    case ND_FUNCTION: {
+    case AST_FUNCTION: {
         println("%s:", node->funcname);
         println("  push rbp");
         println("  mov rbp, rsp");
@@ -180,18 +180,18 @@ static void gen(Ast *node)
         println("  ret");
         return;
     }
-    case ND_ADDR: {
+    case AST_ADDR: {
         gen_lval(node->unary); // unary を左辺値として評価すればアドレスが手に入る
         return;
     }
-    case ND_DEREF: {
+    case AST_DEREF: {
         gen(node->unary); // スタックトップにアドレスが入る
         println("  pop rax");
         println("  mov rax, [rax]");
         println("  push rax");
         return;
     }
-    case ND_VARDECL: {
+    case AST_VARDECL: {
         return;
     }
     }
@@ -203,40 +203,40 @@ static void gen(Ast *node)
     println("  pop rax");
 
     switch (node->kind) {
-    case ND_ADD:
+    case AST_ADD:
         println("  add rax, rdi");
         break;
-    case ND_SUB:
+    case AST_SUB:
         println("  sub rax, rdi");
         break;
-    case ND_MUL:
+    case AST_MUL:
         println("  imul rax, rdi");
         break;
-    case ND_DIV:
+    case AST_DIV:
         println("  cqo");      // 64 bit の rax の値を 128 bit に伸ばして rdx と rax にセットする
         println("  idiv rdi"); // rdx と rax を合わせた 128 bit の数値を rdi で割り算する
         break;
-    case ND_EQ:
+    case AST_EQ:
         println("  cmp rax, rdi");  // rax と rdi の比較
         println("  sete al");       // cmp の結果を al レジスタ (rax の下位 8 bit) に設定する
         println("  movzb rax, al"); // rax の上位 56 bit をゼロで埋める
         break;
-    case ND_NE:
+    case AST_NE:
         println("  cmp rax, rdi");
         println("  setne al");
         println("  movzb rax, al");
         break;
-    case ND_LT:
+    case AST_LT:
         println("  cmp rax, rdi");
         println("  setl al");
         println("  movzb rax, al");
         break;
-    case ND_LE:
+    case AST_LE:
         println("  cmp rax, rdi");
         println("  setle al");
         println("  movzb rax, al");
         break;
-    case ND_ADD_PTR: {
+    case AST_ADD_PTR: {
         println("  imul rdi, %d", node->type_size);
         println("  add rax, rdi");
         break;

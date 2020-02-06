@@ -19,7 +19,7 @@ struct Vector {
 Vector *new_vector(void);
 void push_back(Vector *vec, void *data);
 
-// token.h //////////////////////////////////////
+// token.c //////////////////////////////////////
 
 typedef enum {
     TK_PLUS,   // +
@@ -62,8 +62,6 @@ struct Token {
     int val;        // 整数トークンの値
 };
 
-// extern Token *token;
-
 Token *new_token(TokenKind, Token *, char *, int);
 void set_token(Token *);
 Token *consume_token(TokenKind);
@@ -99,28 +97,28 @@ struct LVar {
 
 // 抽象構文木のノードの種類
 typedef enum {
-    ND_ADD,
-    ND_SUB,
-    ND_MUL,
-    ND_DIV,
-    ND_NUM,
-    ND_EQ,
-    ND_NE,
-    ND_LT,
-    ND_LE,
-    ND_ASSIGN,
-    ND_RETURN,
-    ND_IF,
-    ND_WHILE,
-    ND_FOR,
-    ND_BLOCK,
-    ND_FUNCALL,  // 関数呼び出し
-    ND_FUNCTION, // 関数定義
-    ND_ADDR,     // リファレンス &
-    ND_DEREF,    // デリファレンス *
-    ND_VARDECL,  // 変数宣言
-    ND_LVAR,     // ローカル変数
-    ND_ADD_PTR,  // ポインタの足し算
+    AST_ADD,
+    AST_SUB,
+    AST_MUL,
+    AST_DIV,
+    AST_NUM,
+    AST_EQ,
+    AST_NE,
+    AST_LT,
+    AST_LE,
+    AST_ASSIGN,
+    AST_RETURN,
+    AST_IF,
+    AST_WHILE,
+    AST_FOR,
+    AST_BLOCK,
+    AST_FUNCALL,  // 関数呼び出し
+    AST_FUNCTION, // 関数定義
+    AST_ADDR,     // リファレンス &
+    AST_DEREF,    // デリファレンス *
+    AST_VARDECL,  // 変数宣言
+    AST_LVAR,     // ローカル変数
+    AST_ADD_PTR,  // ポインタの足し算
 } AstKind;
 
 typedef struct Ast Ast;
