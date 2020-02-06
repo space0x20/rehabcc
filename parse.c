@@ -54,7 +54,7 @@ static Ast *new_node_num(int val)
 {
     Ast *node = new_node(AST_NUM);
     node->val = val;
-    node->type = type_int();
+    node->type = int_type();
     return node;
 }
 
@@ -262,11 +262,11 @@ static Ast *parse_equality(void)
     while (1) {
         if (consume_token(TK_EQ)) {
             node = new_node_binop(AST_EQ, node, parse_relational());
-            node->type = type_int();
+            node->type = int_type();
         }
         else if (consume_token(TK_NE)) {
             node = new_node_binop(AST_NE, node, parse_relational());
-            node->type = type_int();
+            node->type = int_type();
         }
         else {
             return node;
@@ -281,19 +281,19 @@ static Ast *parse_relational(void)
     while (1) {
         if (consume_token(TK_LT)) {
             node = new_node_binop(AST_LT, node, parse_add());
-            node->type = type_int();
+            node->type = int_type();
         }
         else if (consume_token(TK_LE)) {
             node = new_node_binop(AST_LE, node, parse_add());
-            node->type = type_int();
+            node->type = int_type();
         }
         else if (consume_token(TK_GT)) {
             node = new_node_binop(AST_LT, parse_add(), node);
-            node->type = type_int();
+            node->type = int_type();
         }
         else if (consume_token(TK_GE)) {
             node = new_node_binop(AST_LE, parse_add(), node);
-            node->type = type_int();
+            node->type = int_type();
         }
         else {
             return node;
@@ -307,25 +307,25 @@ static Ast *parse_add(void)
 
     while (1) {
         if (consume_token(TK_PLUS)) {
-            if (node->kind == AST_LVAR && node->lvar->type->type == T_PTR) {
+            if (node->kind == AST_LVAR && node->lvar->type->bt == T_PTR) {
                 node = new_node_binop(AST_ADD_PTR, node, parse_mul());
                 Type *to = node->lhs->lvar->type->ptr_to;
-                if (to->type == T_PTR) {
+                if (to->bt == T_PTR) {
                     node->type_size = 8;
                 }
-                else if (to->type == T_INT) {
+                else if (to->bt == T_INT) {
                     node->type_size = 4;
                 }
                 node->type = node->lhs->lvar->type;
             }
             else {
                 node = new_node_binop(AST_ADD, node, parse_mul());
-                node->type = type_int();
+                node->type = int_type();
             }
         }
         else if (consume_token(TK_MINUS)) {
             node = new_node_binop(AST_SUB, node, parse_mul());
-            node->type = type_int();
+            node->type = int_type();
         }
         else {
             return node;
@@ -340,11 +340,11 @@ static Ast *parse_mul(void)
     while (1) {
         if (consume_token(TK_MUL)) {
             node = new_node_binop(AST_MUL, node, parse_unary());
-            node->type = type_int();
+            node->type = int_type();
         }
         else if (consume_token(TK_DIV)) {
             node = new_node_binop(AST_DIV, node, parse_unary());
-            node->type = type_int();
+            node->type = int_type();
         }
         else {
             return node;
@@ -357,13 +357,13 @@ static Ast *parse_unary(void)
     if (consume_token(TK_MUL)) {
         Ast *node = new_node(AST_DEREF);
         node->unary = parse_unary();
-        node->type = type_deref(node->unary->type);
+        node->type = deref_type(node->unary->type);
         return node;
     }
     if (consume_token(TK_AND)) {
         Ast *node = new_node(AST_ADDR);
         node->unary = parse_unary();
-        node->type = type_ptr(node->unary->type);
+        node->type = ptr_type(node->unary->type);
         return node;
     }
     if (consume_token(TK_PLUS)) {
@@ -371,13 +371,13 @@ static Ast *parse_unary(void)
     }
     if (consume_token(TK_MINUS)) {
         Ast *node = new_node_binop(AST_SUB, new_node_num(0), parse_primary());
-        node->type = type_int();
+        node->type = int_type();
         return node;
     }
     if (consume_token(TK_SIZEOF)) {
         Ast *arg = parse_unary();
         int val = 0;
-        switch (arg->type->type) {
+        switch (arg->type->bt) {
         case T_INT:
             val = 4;
             break;
@@ -433,7 +433,7 @@ static Ast *parse_primary(void)
     if (tok) {
         Ast *node = new_node(AST_NUM);
         node->val = tok->val;
-        node->type = type_int();
+        node->type = int_type();
         return node;
     }
 
@@ -455,16 +455,9 @@ static Type *parse_type(void)
     if (!consume_token(TK_INT)) {
         return NULL;
     }
-
-    Type *type = calloc(1, sizeof(Type));
-    type->type = T_INT;
-
+    Type *type = int_type();
     while (consume_token(TK_MUL)) {
-        Type *new_type = calloc(1, sizeof(Type));
-        new_type->type = T_PTR;
-        new_type->ptr_to = type;
-        type = new_type;
+        type = ptr_type(type);
     }
-
     return type;
 }

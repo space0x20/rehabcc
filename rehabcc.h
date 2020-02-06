@@ -78,13 +78,13 @@ typedef enum {
 typedef struct Type Type;
 
 struct Type {
-    BasicType type;
+    BasicType bt;
     Type *ptr_to;
 };
 
-Type *type_int(void);
-Type *type_ptr(Type *);
-Type *type_deref(Type *);
+Type *int_type(void);
+Type *ptr_type(Type *);
+Type *deref_type(Type *);
 
 // LVar /////////////////////////////////////////
 

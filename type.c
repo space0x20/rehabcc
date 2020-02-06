@@ -3,11 +3,11 @@
 static Type *new_type(BasicType bt)
 {
     Type *type = calloc(1, sizeof(Type));
-    type->type = bt;
+    type->bt = bt;
     return type;
 }
 
-Type *type_int(void)
+Type *int_type(void)
 {
     static Type *type = NULL;
     if (!type) {
@@ -16,14 +16,14 @@ Type *type_int(void)
     return type;
 }
 
-Type *type_ptr(Type *ptr_to)
+Type *ptr_type(Type *ptr_to)
 {
     Type *type = new_type(T_PTR);
     type->ptr_to = ptr_to;
     return type;
 }
 
-Type *type_deref(Type *type)
+Type *deref_type(Type *type)
 {
     return type->ptr_to;
 }
