@@ -66,7 +66,7 @@ static void gen(Ast *node)
         return;
     }
     case AST_RETURN: {
-        gen(node->ret); // return 式の値を評価、スタックトップに式の値が残る
+        gen(node->lhs); // return 式の値を評価、スタックトップに式の値が残る
         println("  pop rax");
         // 呼び出し元の関数フレームに戻る
         println("  mov rsp, rbp");

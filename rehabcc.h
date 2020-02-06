@@ -139,9 +139,6 @@ struct Ast {
     // kind = ND_NUM の場合整数値
     int val;
 
-    // kind = ND_RETURN
-    Ast *ret;
-
     // if (cond) { then } else { els }
     // while (cond) { stmt }
     // for (init; cond; update) { stmt }

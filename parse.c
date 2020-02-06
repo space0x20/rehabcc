@@ -171,11 +171,11 @@ static Ast *parse_function(void)
 
 static Ast *parse_stmt(void)
 {
+    Ast *ast;
     if (consume_token(TK_RETURN)) {
-        Ast *node = new_node(AST_RETURN);
-        node->ret = parse_expr();
+        Ast *lhs = parse_expr();
         expect_token(TK_SCOLON);
-        return node;
+        return new_ast_unary(AST_RETURN, lhs->type, lhs);
     }
 
     if (consume_token(TK_IF)) {
