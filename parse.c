@@ -21,12 +21,6 @@ static Type *consume_type(void)
     return type;
 }
 
-// 次のトークンが入力の末尾の場合、真を返す。
-static bool at_eof(void)
-{
-    return token->kind == TK_EOF;
-}
-
 static void init_lvar(void)
 {
     LVar *lvar = calloc(1, sizeof(LVar));
@@ -160,7 +154,7 @@ void parse(void)
 static void program(void)
 {
     int i = 0;
-    while (!at_eof()) {
+    while (!consume_token(TK_EOF)) {
         code[i++] = funcdef();
     }
     code[i] = NULL;
