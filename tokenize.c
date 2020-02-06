@@ -1,15 +1,14 @@
 #include "rehabcc.h"
 
-typedef struct
-{
+typedef struct {
     TokenKind kind;
     char *str;
-} TokenMap;
+} TokenKindStr;
 
 // clang-format off
 // トークンとして認識する記号たち
 // 列挙順にマッチングを行うため、たとえば <= を < よりも先に並べる必要がある
-static TokenMap symbols[] = {
+static TokenKindStr symbols[] = {
     {TK_PLUS, "+"},
     {TK_MINUS, "-"},
     {TK_MUL, "*"},
@@ -31,7 +30,7 @@ static TokenMap symbols[] = {
     {TK_EOF, ""},  // 最後においておくこと
 };
 
-static TokenMap keywords[] = {
+static TokenKindStr keywords[] = {
     {TK_RETURN, "return"},
     {TK_SIZEOF, "sizeof"},
     {TK_IF, "if"},
@@ -44,8 +43,7 @@ static TokenMap keywords[] = {
 // clang-format on
 
 // 新しいトークンを作成して cur の次につなげる
-Token *
-new_token(TokenKind kind, Token *cur, char *str, int len)
+Token *new_token(TokenKind kind, Token *cur, char *str, int len)
 {
     Token *tok = calloc(1, sizeof(Token));
     tok->kind = kind;
