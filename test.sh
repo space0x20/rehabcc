@@ -90,5 +90,9 @@ try 42 'int main() { int x; int *y; int **z; y = &x; z = &y; **z = 42; return x;
 # ステップ19
 try 3 'int main() { int *p; p = alloc4(1, 2, 3, 4); int *q; q = p + 2; return *q; }'
 
+# ステップ20
+try 4 'int main() { int a; a = sizeof(a); return a; }'
+try 8 'int main() { int a; int *b; a = sizeof(b); return a; }'
+
 echo OK
 rm -f tmp tmp.s

@@ -33,6 +33,7 @@ static TokenMap symbols[] = {
 
 static TokenMap keywords[] = {
     {TK_RETURN, "return"},
+    {TK_SIZEOF, "sizeof"},
     {TK_IF, "if"},
     {TK_ELSE, "else"},
     {TK_WHILE, "while"},

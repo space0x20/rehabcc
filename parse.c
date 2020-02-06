@@ -109,6 +109,29 @@ static LVar *find_lvar(Token *tok)
     return NULL;
 }
 
+static Type *type_int(void)
+{
+    static Type *t = NULL;
+    if (!t) {
+        t = calloc(1, sizeof(Type));
+        t->type = T_INT;
+    }
+    return t;
+}
+
+static Type *type_ptr(Type *ptr_to)
+{
+    Type *t = calloc(1, sizeof(Type));
+    t->type = T_PTR;
+    t->ptr_to = ptr_to;
+    return t;
+}
+
+static Type *type_deref(Type *t)
+{
+    return t->ptr_to;
+}
+
 static Node *new_node(NodeKind kind)
 {
     Node *node = calloc(1, sizeof(Node));
@@ -128,6 +151,7 @@ static Node *new_node_num(int val)
 {
     Node *node = new_node(ND_NUM);
     node->val = val;
+    node->type = type_int();
     return node;
 }
 
@@ -152,6 +176,7 @@ static Node *new_node_num(int val)
 //            | "-"? primary
 //            | "*" unary
 //            | "&" unary
+//            | "sizeof" unary
 // primary    = num
 //            | ident "(" arglist? ")" ... 関数呼び出し
 //            | ident                  ... 変数
@@ -321,6 +346,7 @@ static Node *assign(void)
     Node *node = equality();
     if (consume(TK_ASSIGN)) {
         node = new_node_binop(ND_ASSIGN, node, assign());
+        node->type = node->lhs->type;
     }
     return node;
 }
@@ -332,9 +358,11 @@ static Node *equality(void)
     while (1) {
         if (consume(TK_EQ)) {
             node = new_node_binop(ND_EQ, node, relational());
+            node->type = type_int();
         }
         else if (consume(TK_NE)) {
             node = new_node_binop(ND_NE, node, relational());
+            node->type = type_int();
         }
         else {
             return node;
@@ -349,15 +377,19 @@ static Node *relational(void)
     while (1) {
         if (consume(TK_LT)) {
             node = new_node_binop(ND_LT, node, add());
+            node->type = type_int();
         }
         else if (consume(TK_LE)) {
             node = new_node_binop(ND_LE, node, add());
+            node->type = type_int();
         }
         else if (consume(TK_GT)) {
             node = new_node_binop(ND_LT, add(), node);
+            node->type = type_int();
         }
         else if (consume(TK_GE)) {
             node = new_node_binop(ND_LE, add(), node);
+            node->type = type_int();
         }
         else {
             return node;
@@ -380,13 +412,16 @@ static Node *add(void)
                 else if (to->type == T_INT) {
                     node->type_size = 4;
                 }
+                node->type = node->lhs->lvar->type;
             }
             else {
                 node = new_node_binop(ND_ADD, node, mul());
+                node->type = type_int();
             }
         }
         else if (consume(TK_MINUS)) {
             node = new_node_binop(ND_SUB, node, mul());
+            node->type = type_int();
         }
         else {
             return node;
@@ -401,9 +436,11 @@ static Node *mul(void)
     while (1) {
         if (consume(TK_MUL)) {
             node = new_node_binop(ND_MUL, node, unary());
+            node->type = type_int();
         }
         else if (consume(TK_DIV)) {
             node = new_node_binop(ND_DIV, node, unary());
+            node->type = type_int();
         }
         else {
             return node;
@@ -416,18 +453,37 @@ static Node *unary(void)
     if (consume(TK_MUL)) {
         Node *node = new_node(ND_DEREF);
         node->unary = unary();
+        node->type = type_deref(node->unary->type);
         return node;
     }
     if (consume(TK_AND)) {
         Node *node = new_node(ND_ADDR);
         node->unary = unary();
+        node->type = type_ptr(node->unary->type);
         return node;
     }
     if (consume(TK_PLUS)) {
         return primary();
     }
     if (consume(TK_MINUS)) {
-        return new_node_binop(ND_SUB, new_node_num(0), primary());
+        Node *node = new_node_binop(ND_SUB, new_node_num(0), primary());
+        node->type = type_int();
+        return node;
+    }
+    if (consume(TK_SIZEOF)) {
+        Node *arg = unary();
+        int val = 0;
+        switch (arg->type->type) {
+        case T_INT:
+            val = 4;
+            break;
+        case T_PTR:
+            val = 8;
+            break;
+        }
+        Node *node = new_node_num(val);
+        node->type = T_INT;
+        return node;
     }
     return primary();
 }
@@ -453,6 +509,7 @@ static Node *primary(void)
                 node->args = arglist();
                 expect(TK_RPAREN);
             }
+            // Todo : 関数の戻り値型を node->type にセットする
             return node;
         }
 
@@ -464,6 +521,7 @@ static Node *primary(void)
         else {
             error_at(tok->str, "定義されていない変数を使っています");
         }
+        node->type = node->lvar->type;
         return node;
     }
 
