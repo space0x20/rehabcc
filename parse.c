@@ -249,12 +249,12 @@ static Ast *parse_expr(void)
 
 static Ast *parse_assign(void)
 {
-    Ast *node = parse_equality();
+    Ast *ast = parse_equality();
     if (consume_token(TK_ASSIGN)) {
-        node = new_node_binop(AST_ASSIGN, node, parse_assign());
-        node->type = node->lhs->type;
+        Ast *rhs = parse_assign();
+        ast = new_ast_binary(AST_ASSIGN, rhs->type, ast, rhs);
     }
-    return node;
+    return ast;
 }
 
 static Ast *parse_equality(void)
