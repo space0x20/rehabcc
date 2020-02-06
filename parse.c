@@ -35,29 +35,6 @@ static LVar *find_lvar(Token *tok)
     return NULL;
 }
 
-static Type *type_int(void)
-{
-    static Type *t = NULL;
-    if (!t) {
-        t = calloc(1, sizeof(Type));
-        t->type = T_INT;
-    }
-    return t;
-}
-
-static Type *type_ptr(Type *ptr_to)
-{
-    Type *t = calloc(1, sizeof(Type));
-    t->type = T_PTR;
-    t->ptr_to = ptr_to;
-    return t;
-}
-
-static Type *type_deref(Type *t)
-{
-    return t->ptr_to;
-}
-
 static Ast *new_node(AstKind kind)
 {
     Ast *node = calloc(1, sizeof(Ast));

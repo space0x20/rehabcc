@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ctype.h>
 #include <memory.h>
 #include <stdarg.h>
@@ -67,7 +68,7 @@ void set_token(Token *);
 Token *consume_token(TokenKind);
 void expect_token(TokenKind);
 
-// Type /////////////////////////////////////////
+// type.c ///////////////////////////////////////
 
 typedef enum {
     T_INT,
@@ -80,6 +81,10 @@ struct Type {
     BasicType type;
     Type *ptr_to;
 };
+
+Type *type_int(void);
+Type *type_ptr(Type *);
+Type *type_deref(Type *);
 
 // LVar /////////////////////////////////////////
 
