@@ -155,17 +155,10 @@ struct Ast {
     // kind = ND_LVAR の場合に使う
     LVar *lvar;
 
-    // kind = ND_FUNC
+    // AST_FUNCTION, AST_FUNCALL
     char *funcname;
-    Vector *params; // 変数名のベクトル (型情報は今はない)
     LVar *locals;
-
-    // kind = ND_FUNCALL
-    char *func;
-    Vector *args; // vector of Node (expr)
-
-    // kind = ND_DEREF
-    Ast *unary;
+    Vector *params;
 };
 
 Ast *new_ast(AstKind, Type *);

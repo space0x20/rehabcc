@@ -135,12 +135,12 @@ static void gen(Ast *node)
     case AST_FUNCALL: {
         int label = get_label();
         // 引数をレジスタに載せる
-        for (int i = 0; i < node->args->size; i++) {
+        for (int i = 0; i < node->params->size; i++) {
             if (i == 6) {
                 // まだ6個までしか渡せない
                 break;
             }
-            gen(node->args->data[i]); // スタックトップに引数を評価した値が来る
+            gen(node->params->data[i]); // スタックトップに引数を評価した値が来る
             println("  pop rax");
             println("  mov %s, rax", regs[i]);
         }
@@ -149,11 +149,11 @@ static void gen(Ast *node)
         println("  and rax, 15");
         println("  je .Lcall%d", label);
         println("  sub rsp, 8");
-        println("  call %s", node->func);
+        println("  call %s", node->funcname);
         println("  add rsp, 8");
         println("  jmp .Lend%d", label);
         println(".Lcall%d:", label);
-        println("  call %s", node->func);
+        println("  call %s", node->funcname);
         println(".Lend%d:", label);
         println("  push rax"); // 関数の戻り値をスタックトップに載せる
         return;

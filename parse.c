@@ -36,7 +36,7 @@ static LVar *find_lvar(Token *tok)
 }
 
 // 文法
-// program    = funcdef*
+// program    = function*
 // function   = type ident "(" paramlist? ")" block
 // block      = "{" stmt* "}"
 // stmt       = expr ";"
@@ -350,12 +350,12 @@ static Ast *parse_primary(void)
     if (tok) {
         if (consume_token(TK_LPAREN)) {
             ast = new_ast(AST_FUNCALL, NULL); // Todo : NULL の代わりに関数の戻り値型を指定する
-            ast->func = copy_token_str(tok);
+            ast->funcname = copy_token_str(tok);
             if (consume_token(TK_RPAREN)) {
-                ast->args = new_vector();
+                ast->params = new_vector();
             }
             else {
-                ast->args = parse_arglist();
+                ast->params = parse_arglist();
                 expect_token(TK_RPAREN);
             }
             return ast;
