@@ -332,19 +332,16 @@ static Ast *parse_add(void)
 
 static Ast *parse_mul(void)
 {
-    Ast *node = parse_unary();
-
+    Ast *ast = parse_unary();
     while (1) {
         if (consume_token(TK_MUL)) {
-            node = new_node_binop(AST_MUL, node, parse_unary());
-            node->type = int_type();
+            ast = new_ast_binary(AST_MUL, int_type(), ast, parse_unary());
         }
         else if (consume_token(TK_DIV)) {
-            node = new_node_binop(AST_DIV, node, parse_unary());
-            node->type = int_type();
+            ast = new_ast_binary(AST_DIV, int_type(), ast, parse_unary());
         }
         else {
-            return node;
+            return ast;
         }
     }
 }
