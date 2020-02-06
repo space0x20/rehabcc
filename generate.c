@@ -181,7 +181,7 @@ static void gen(Ast *node)
         return;
     }
     case AST_ADDR: {
-        gen_lval(node->unary); // unary を左辺値として評価すればアドレスが手に入る
+        gen_lval(node->lhs); // lhs を左辺値として評価すればアドレスが手に入る
         return;
     }
     case AST_DEREF: {

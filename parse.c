@@ -357,24 +357,18 @@ static Ast *parse_unary(void)
         return new_ast_unary(AST_DEREF, deref_type(lhs->type), lhs);
     }
     if (consume_token(TK_AND)) {
-        Ast *node = new_node(AST_ADDR);
-        node->unary = parse_unary();
-        node->type = ptr_type(node->unary->type);
-        return node;
+        lhs = parse_unary();
+        return new_ast_unary(AST_ADDR, ptr_type(lhs->type), lhs);
+    }
+    if (consume_token(TK_SIZEOF)) {
+        lhs = parse_unary();
+        return new_ast_num(lhs->type->nbyte);
     }
     if (consume_token(TK_PLUS)) {
         return parse_primary();
     }
     if (consume_token(TK_MINUS)) {
-        Ast *node = new_node_binop(AST_SUB, new_node_num(0), parse_primary());
-        node->type = int_type();
-        return node;
-    }
-    if (consume_token(TK_SIZEOF)) {
-        Ast *arg = parse_unary();
-        Ast *node = new_node_num(arg->type->nbyte);
-        node->type = T_INT;
-        return node;
+        return new_ast_binary(AST_SUB, int_type(), new_ast_num(0), parse_primary());
     }
     return parse_primary();
 }

@@ -177,6 +177,8 @@ struct Ast {
 
 Ast *new_ast(AstKind, Type *);
 Ast *new_ast_unary(AstKind, Type *, Ast *);
+Ast *new_ast_binary(AstKind, Type *, Ast *, Ast *);
+Ast *new_ast_num(int val);
 
 // rehabcc.c ////////////////////////////////////
 
