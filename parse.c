@@ -382,13 +382,16 @@ static Ast *parse_unary(void)
 
 static Ast *parse_primary(void)
 {
+    Ast *ast;
+    Token *tok;
+
     if (consume_token(TK_LPAREN)) {
-        Ast *node = parse_expr();
+        ast = parse_expr();
         expect_token(TK_RPAREN);
-        return node;
+        return ast;
     }
 
-    Token *tok = consume_token(TK_IDENT);
+    tok = consume_token(TK_IDENT);
     if (tok) {
         if (consume_token(TK_LPAREN)) {
             Ast *node = new_node(AST_FUNCALL);
