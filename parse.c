@@ -278,27 +278,22 @@ static Ast *parse_equality(void)
 
 static Ast *parse_relational(void)
 {
-    Ast *node = parse_add();
-
+    Ast *ast = parse_add();
     while (1) {
         if (consume_token(TK_LT)) {
-            node = new_node_binop(AST_LT, node, parse_add());
-            node->type = int_type();
+            ast = new_ast_binary(AST_LT, int_type(), ast, parse_add());
         }
         else if (consume_token(TK_LE)) {
-            node = new_node_binop(AST_LE, node, parse_add());
-            node->type = int_type();
+            ast = new_ast_binary(AST_LE, int_type(), ast, parse_add());
         }
         else if (consume_token(TK_GT)) {
-            node = new_node_binop(AST_LT, parse_add(), node);
-            node->type = int_type();
+            ast = new_ast_binary(AST_LT, int_type(), parse_add(), ast);
         }
         else if (consume_token(TK_GE)) {
-            node = new_node_binop(AST_LE, parse_add(), node);
-            node->type = int_type();
+            ast = new_ast_binary(AST_LE, int_type(), parse_add(), ast);
         }
         else {
-            return node;
+            return ast;
         }
     }
 }
