@@ -1,16 +1,5 @@
 #include "rehabcc.h"
 
-// 次のトークンが期待している種類のときには、トークンを一つ進めて真を返す。
-// そうでない場合は、偽を返す。
-static bool consume(TokenKind kind)
-{
-    if (token->kind != kind) {
-        return false;
-    }
-    token = token->next;
-    return true;
-}
-
 // 着目しているトークンが識別子の場合には、そのトークンを返す。
 // さらに着目しているトークンを一つすすめる。
 // 着目しているトークンが識別子でない場合は、NULLポインタを返す。
@@ -29,14 +18,14 @@ static Token *consume_ident(void)
 // そうでない場合には NULL ポインタを返す
 static Type *consume_type(void)
 {
-    if (!consume(TK_INT)) {
+    if (!consume_token(TK_INT)) {
         return NULL;
     }
 
     Type *type = calloc(1, sizeof(Type));
     type->type = T_INT;
 
-    while (consume(TK_MUL)) {
+    while (consume_token(TK_MUL)) {
         Type *new_type = calloc(1, sizeof(Type));
         new_type->type = T_PTR;
         new_type->ptr_to = type;
@@ -157,7 +146,7 @@ static Node *new_node_num(int val)
 
 // 文法
 // program    = funcdef*
-// funcdef    = type ident "(" paramlist? ")" block
+// function   = type ident "(" paramlist? ")" block
 // block      = "{" stmt* "}"
 // stmt       = expr ";"
 //            | block
@@ -231,7 +220,7 @@ static Node *funcdef(void)
     node->params = new_vector();
     init_lvar();
     expect(TK_LPAREN);
-    while (!consume(TK_RPAREN)) {
+    while (!consume_token(TK_RPAREN)) {
         Type *type = consume_type();
         if (!type) {
             error("仮引数の型が宣言されていません");
@@ -246,7 +235,7 @@ static Node *funcdef(void)
             add_lvar(tok, type);
         }
 
-        if (!consume(TK_COLON)) {
+        if (!consume_token(TK_COLON)) {
             expect(TK_RPAREN);
             break;
         }
@@ -255,7 +244,7 @@ static Node *funcdef(void)
     // 本体
     node->stmts = new_vector();
     expect(TK_LBRACE);
-    while (!consume(TK_RBRACE)) {
+    while (!consume_token(TK_RBRACE)) {
         push_back(node->stmts, stmt());
     }
 
@@ -265,24 +254,24 @@ static Node *funcdef(void)
 
 static Node *stmt(void)
 {
-    if (consume(TK_RETURN)) {
+    if (consume_token(TK_RETURN)) {
         Node *node = new_node(ND_RETURN);
         node->ret = expr();
         expect(TK_SCOLON);
         return node;
     }
 
-    if (consume(TK_IF)) {
+    if (consume_token(TK_IF)) {
         Node *node = new_node(ND_IF);
         expect(TK_LPAREN);
         node->cond = expr();
         expect(TK_RPAREN);
         node->then = stmt();
-        node->els = consume(TK_ELSE) ? stmt() : NULL;
+        node->els = consume_token(TK_ELSE) ? stmt() : NULL;
         return node;
     }
 
-    if (consume(TK_WHILE)) {
+    if (consume_token(TK_WHILE)) {
         Node *node = new_node(ND_WHILE);
         expect(TK_LPAREN);
         node->cond = expr();
@@ -291,18 +280,18 @@ static Node *stmt(void)
         return node;
     }
 
-    if (consume(TK_FOR)) {
+    if (consume_token(TK_FOR)) {
         Node *node = new_node(ND_FOR);
         expect(TK_LPAREN);
-        if (!consume(TK_SCOLON)) {
+        if (!consume_token(TK_SCOLON)) {
             node->init = expr();
             expect(TK_SCOLON);
         }
-        if (!consume(TK_SCOLON)) {
+        if (!consume_token(TK_SCOLON)) {
             node->cond = expr();
             expect(TK_SCOLON);
         }
-        if (!consume(TK_RPAREN)) {
+        if (!consume_token(TK_RPAREN)) {
             node->update = expr();
             expect(TK_RPAREN);
         }
@@ -310,10 +299,10 @@ static Node *stmt(void)
         return node;
     }
 
-    if (consume(TK_LBRACE)) {
+    if (consume_token(TK_LBRACE)) {
         Node *node = new_node(ND_BLOCK);
         node->stmts = new_vector();
-        while (!consume(TK_RBRACE)) {
+        while (!consume_token(TK_RBRACE)) {
             push_back(node->stmts, (void *)stmt());
         }
         return node;
@@ -344,7 +333,7 @@ static Node *expr(void)
 static Node *assign(void)
 {
     Node *node = equality();
-    if (consume(TK_ASSIGN)) {
+    if (consume_token(TK_ASSIGN)) {
         node = new_node_binop(ND_ASSIGN, node, assign());
         node->type = node->lhs->type;
     }
@@ -356,11 +345,11 @@ static Node *equality(void)
     Node *node = relational();
 
     while (1) {
-        if (consume(TK_EQ)) {
+        if (consume_token(TK_EQ)) {
             node = new_node_binop(ND_EQ, node, relational());
             node->type = type_int();
         }
-        else if (consume(TK_NE)) {
+        else if (consume_token(TK_NE)) {
             node = new_node_binop(ND_NE, node, relational());
             node->type = type_int();
         }
@@ -375,19 +364,19 @@ static Node *relational(void)
     Node *node = add();
 
     while (1) {
-        if (consume(TK_LT)) {
+        if (consume_token(TK_LT)) {
             node = new_node_binop(ND_LT, node, add());
             node->type = type_int();
         }
-        else if (consume(TK_LE)) {
+        else if (consume_token(TK_LE)) {
             node = new_node_binop(ND_LE, node, add());
             node->type = type_int();
         }
-        else if (consume(TK_GT)) {
+        else if (consume_token(TK_GT)) {
             node = new_node_binop(ND_LT, add(), node);
             node->type = type_int();
         }
-        else if (consume(TK_GE)) {
+        else if (consume_token(TK_GE)) {
             node = new_node_binop(ND_LE, add(), node);
             node->type = type_int();
         }
@@ -402,7 +391,7 @@ static Node *add(void)
     Node *node = mul();
 
     while (1) {
-        if (consume(TK_PLUS)) {
+        if (consume_token(TK_PLUS)) {
             if (node->kind == ND_LVAR && node->lvar->type->type == T_PTR) {
                 node = new_node_binop(ND_ADD_PTR, node, mul());
                 Type *to = node->lhs->lvar->type->ptr_to;
@@ -419,7 +408,7 @@ static Node *add(void)
                 node->type = type_int();
             }
         }
-        else if (consume(TK_MINUS)) {
+        else if (consume_token(TK_MINUS)) {
             node = new_node_binop(ND_SUB, node, mul());
             node->type = type_int();
         }
@@ -434,11 +423,11 @@ static Node *mul(void)
     Node *node = unary();
 
     while (1) {
-        if (consume(TK_MUL)) {
+        if (consume_token(TK_MUL)) {
             node = new_node_binop(ND_MUL, node, unary());
             node->type = type_int();
         }
-        else if (consume(TK_DIV)) {
+        else if (consume_token(TK_DIV)) {
             node = new_node_binop(ND_DIV, node, unary());
             node->type = type_int();
         }
@@ -450,27 +439,27 @@ static Node *mul(void)
 
 static Node *unary(void)
 {
-    if (consume(TK_MUL)) {
+    if (consume_token(TK_MUL)) {
         Node *node = new_node(ND_DEREF);
         node->unary = unary();
         node->type = type_deref(node->unary->type);
         return node;
     }
-    if (consume(TK_AND)) {
+    if (consume_token(TK_AND)) {
         Node *node = new_node(ND_ADDR);
         node->unary = unary();
         node->type = type_ptr(node->unary->type);
         return node;
     }
-    if (consume(TK_PLUS)) {
+    if (consume_token(TK_PLUS)) {
         return primary();
     }
-    if (consume(TK_MINUS)) {
+    if (consume_token(TK_MINUS)) {
         Node *node = new_node_binop(ND_SUB, new_node_num(0), primary());
         node->type = type_int();
         return node;
     }
-    if (consume(TK_SIZEOF)) {
+    if (consume_token(TK_SIZEOF)) {
         Node *arg = unary();
         int val = 0;
         switch (arg->type->type) {
@@ -490,7 +479,7 @@ static Node *unary(void)
 
 static Node *primary(void)
 {
-    if (consume(TK_LPAREN)) {
+    if (consume_token(TK_LPAREN)) {
         Node *node = expr();
         expect(TK_RPAREN);
         return node;
@@ -498,11 +487,11 @@ static Node *primary(void)
 
     Token *tok = consume_ident();
     if (tok) {
-        if (consume(TK_LPAREN)) {
+        if (consume_token(TK_LPAREN)) {
             Node *node = new_node(ND_FUNCALL);
             node->func = calloc(tok->len + 1, sizeof(char));
             strncpy(node->func, tok->str, tok->len);
-            if (consume(TK_RPAREN)) {
+            if (consume_token(TK_RPAREN)) {
                 node->args = new_vector();
             }
             else {
@@ -532,7 +521,7 @@ static Vector *arglist(void)
 {
     Vector *args = new_vector();
     push_back(args, expr());
-    while (consume(TK_COLON)) {
+    while (consume_token(TK_COLON)) {
         push_back(args, expr());
     }
     return args;

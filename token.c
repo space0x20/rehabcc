@@ -16,3 +16,13 @@ void set_token(Token *t)
 {
     token = t;
 }
+
+Token *consume_token(TokenKind kind)
+{
+    if (token->kind == kind) {
+        Token *t = token;
+        token = token->next;
+        return t;
+    }
+    return NULL;
+}
