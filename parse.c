@@ -406,16 +406,13 @@ static Ast *parse_primary(void)
             return ast;
         }
 
-        Ast *node = new_node(AST_LVAR);
         LVar *lvar = find_lvar(tok);
-        if (lvar) {
-            node->lvar = lvar;
+        if (!lvar) {
+            error_token("定義されていない変数を使用しています");
         }
-        else {
-            error_at(tok->str, "定義されていない変数を使っています");
-        }
-        node->type = node->lvar->type;
-        return node;
+        ast = new_ast(AST_LVAR, lvar->type);
+        ast->lvar = lvar;
+        return ast;
     }
 
     tok = consume_token(TK_NUM);
