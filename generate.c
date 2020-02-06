@@ -158,7 +158,7 @@ static void gen(Node *node)
         println("  push rax"); // 関数の戻り値をスタックトップに載せる
         return;
     }
-    case ND_FUNCDEF: {
+    case ND_FUNCTION: {
         println("%s:", node->funcname);
         println("  push rbp");
         println("  mov rbp, rsp");

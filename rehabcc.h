@@ -114,13 +114,13 @@ typedef enum {
     ND_WHILE,
     ND_FOR,
     ND_BLOCK,
-    ND_FUNCALL,
-    ND_FUNCDEF,
-    ND_ADDR,    // リファレンス &
-    ND_DEREF,   // デリファレンス *
-    ND_VARDECL, // 変数宣言
-    ND_LVAR,    // ローカル変数
-    ND_ADD_PTR, // ポインタの足し算
+    ND_FUNCALL,  // 関数呼び出し
+    ND_FUNCTION, // 関数定義
+    ND_ADDR,     // リファレンス &
+    ND_DEREF,    // デリファレンス *
+    ND_VARDECL,  // 変数宣言
+    ND_LVAR,     // ローカル変数
+    ND_ADD_PTR,  // ポインタの足し算
 } NodeKind;
 
 typedef struct Node Node;

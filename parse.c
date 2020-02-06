@@ -142,7 +142,7 @@ static void parse_program(void)
 
 static Node *parse_function(void)
 {
-    Node *node = new_node(ND_FUNCDEF);
+    Node *node = new_node(ND_FUNCTION);
 
     node->type = parse_type();
     if (!node->type) {
