@@ -171,7 +171,6 @@ static Ast *parse_function(void)
 
 static Ast *parse_stmt(void)
 {
-    Ast *ast;
     if (consume_token(TK_RETURN)) {
         Ast *lhs = parse_expr();
         expect_token(TK_SCOLON);
@@ -179,67 +178,68 @@ static Ast *parse_stmt(void)
     }
 
     if (consume_token(TK_IF)) {
-        Ast *node = new_node(AST_IF);
+        Ast *ast = new_ast(AST_IF, NULL);
         expect_token(TK_LPAREN);
-        node->cond = parse_expr();
+        ast->cond = parse_expr();
         expect_token(TK_RPAREN);
-        node->then = parse_stmt();
-        node->els = consume_token(TK_ELSE) ? parse_stmt() : NULL;
-        return node;
+        ast->then = parse_stmt();
+        ast->els = consume_token(TK_ELSE) ? parse_stmt() : NULL;
+        return ast;
     }
 
     if (consume_token(TK_WHILE)) {
-        Ast *node = new_node(AST_WHILE);
+        Ast *ast = new_ast(AST_WHILE, NULL);
         expect_token(TK_LPAREN);
-        node->cond = parse_expr();
+        ast->cond = parse_expr();
         expect_token(TK_RPAREN);
-        node->stmt = parse_stmt();
-        return node;
+        ast->stmt = parse_stmt();
+        return ast;
     }
 
     if (consume_token(TK_FOR)) {
-        Ast *node = new_node(AST_FOR);
+        Ast *ast = new_ast(AST_FOR, NULL);
         expect_token(TK_LPAREN);
         if (!consume_token(TK_SCOLON)) {
-            node->init = parse_expr();
+            ast->init = parse_expr();
             expect_token(TK_SCOLON);
         }
         if (!consume_token(TK_SCOLON)) {
-            node->cond = parse_expr();
+            ast->cond = parse_expr();
             expect_token(TK_SCOLON);
         }
         if (!consume_token(TK_RPAREN)) {
-            node->update = parse_expr();
+            ast->update = parse_expr();
             expect_token(TK_RPAREN);
         }
-        node->stmt = parse_stmt();
-        return node;
+        ast->stmt = parse_stmt();
+        return ast;
     }
 
     if (consume_token(TK_LBRACE)) {
-        Ast *node = new_node(AST_BLOCK);
-        node->stmts = new_vector();
+        Ast *ast = new_ast(AST_BLOCK, NULL);
+        ast->stmts = new_vector();
         while (!consume_token(TK_RBRACE)) {
-            push_back(node->stmts, (void *)parse_stmt());
+            push_back(ast->stmts, (void *)parse_stmt());
         }
-        return node;
+        return ast;
     }
 
     Type *type = parse_type();
     if (type) {
-        Ast *node = new_node(AST_VARDECL);
+        Ast *ast = new_ast(AST_VARDECL, NULL);
         Token *tok = consume_token(TK_IDENT);
         LVar *lvar = find_lvar(tok);
-        if (!lvar) {
-            add_lvar(tok, type);
+        if (lvar) {
+            error_token("変数を重複して宣言しています");
         }
+        add_lvar(tok, type);
         expect_token(TK_SCOLON);
-        return node;
+        return ast;
     }
 
-    Ast *node = parse_expr();
+    Ast *ast = parse_expr();
     expect_token(TK_SCOLON);
-    return node;
+    return ast;
 }
 
 static Ast *parse_expr(void)
