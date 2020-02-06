@@ -259,19 +259,16 @@ static Ast *parse_assign(void)
 
 static Ast *parse_equality(void)
 {
-    Ast *node = parse_relational();
-
+    Ast *ast = parse_relational();
     while (1) {
         if (consume_token(TK_EQ)) {
-            node = new_node_binop(AST_EQ, node, parse_relational());
-            node->type = int_type();
+            ast = new_ast_binary(AST_EQ, int_type(), ast, parse_relational());
         }
         else if (consume_token(TK_NE)) {
-            node = new_node_binop(AST_NE, node, parse_relational());
-            node->type = int_type();
+            ast = new_ast_binary(AST_NE, int_type(), ast, parse_relational());
         }
         else {
-            return node;
+            return ast;
         }
     }
 }
