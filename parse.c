@@ -21,18 +21,6 @@ static Type *consume_type(void)
     return type;
 }
 
-// 次のトークンが数値の場合、トークンを一つ進めて数値を返す。
-// それ以外の場合はエラーを出す。
-static int expect_number(void)
-{
-    if (token->kind != TK_NUM) {
-        error_at(token->str, "数ではありません");
-    }
-    int val = token->val;
-    token = token->next;
-    return val;
-}
-
 // 次のトークンが入力の末尾の場合、真を返す。
 static bool at_eof(void)
 {
@@ -490,7 +478,15 @@ static Node *primary(void)
         return node;
     }
 
-    return new_node_num(expect_number());
+    tok = consume_token(TK_NUM);
+    if (tok) {
+        Node *node = new_node(ND_NUM);
+        node->val = tok->val;
+        node->type = type_int();
+        return node;
+    }
+
+    error("パーズできません");
 }
 
 static Vector *arglist(void)
