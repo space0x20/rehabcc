@@ -80,6 +80,7 @@ typedef struct Type Type;
 struct Type {
     BasicType bt;
     Type *ptr_to;
+    int nbyte;
 };
 
 Type *int_type(void);

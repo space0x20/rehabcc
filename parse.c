@@ -310,12 +310,7 @@ static Ast *parse_add(void)
             if (node->kind == AST_LVAR && node->lvar->type->bt == T_PTR) {
                 node = new_node_binop(AST_ADD_PTR, node, parse_mul());
                 Type *to = node->lhs->lvar->type->ptr_to;
-                if (to->bt == T_PTR) {
-                    node->type_size = 8;
-                }
-                else if (to->bt == T_INT) {
-                    node->type_size = 4;
-                }
+                node->type_size = to->nbyte;
                 node->type = node->lhs->lvar->type;
             }
             else {
@@ -376,16 +371,7 @@ static Ast *parse_unary(void)
     }
     if (consume_token(TK_SIZEOF)) {
         Ast *arg = parse_unary();
-        int val = 0;
-        switch (arg->type->bt) {
-        case T_INT:
-            val = 4;
-            break;
-        case T_PTR:
-            val = 8;
-            break;
-        }
-        Ast *node = new_node_num(val);
+        Ast *node = new_node_num(arg->type->nbyte);
         node->type = T_INT;
         return node;
     }
