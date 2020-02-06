@@ -169,10 +169,6 @@ struct Ast {
 
     // kind = ND_DEREF
     Ast *unary;
-
-    // kind = ND_ADD_PTR
-    // ポインタと整数の足し算の場合、データ型のサイズ
-    int type_size;
 };
 
 Ast *new_ast(AstKind, Type *);

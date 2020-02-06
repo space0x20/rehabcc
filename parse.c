@@ -305,27 +305,23 @@ static Ast *parse_relational(void)
 
 static Ast *parse_add(void)
 {
-    Ast *node = parse_mul();
-
+    Ast *ast = parse_mul();
     while (1) {
         if (consume_token(TK_PLUS)) {
-            if (node->kind == AST_LVAR && node->lvar->type->bt == T_PTR) {
-                node = new_node_binop(AST_ADD_PTR, node, parse_mul());
-                Type *to = node->lhs->lvar->type->ptr_to;
-                node->type_size = to->nbyte;
-                node->type = node->lhs->lvar->type;
+            // ポインタと整数の足し算
+            // todo: ポインタが左辺に来る場合しか取り扱っていない
+            if (ast->kind == AST_LVAR && ast->lvar->type->bt == T_PTR) {
+                ast = new_ast_binary(AST_ADD_PTR, ast->lvar->type, ast, parse_mul());
             }
             else {
-                node = new_node_binop(AST_ADD, node, parse_mul());
-                node->type = int_type();
+                ast = new_ast_binary(AST_ADD, int_type(), ast, parse_mul());
             }
         }
         else if (consume_token(TK_MINUS)) {
-            node = new_node_binop(AST_SUB, node, parse_mul());
-            node->type = int_type();
+            ast = new_ast_binary(AST_SUB, int_type(), ast, parse_mul());
         }
         else {
-            return node;
+            return ast;
         }
     }
 }

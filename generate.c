@@ -237,7 +237,7 @@ static void gen(Ast *node)
         println("  movzb rax, al");
         break;
     case AST_ADD_PTR: {
-        println("  imul rdi, %d", node->type_size);
+        println("  imul rdi, %d", node->lhs->lvar->type->ptr_to->nbyte);
         println("  add rax, rdi");
         break;
     }
