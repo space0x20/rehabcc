@@ -62,7 +62,7 @@ struct Token {
     int val;        // 整数トークンの値
 };
 
-extern Token *token;
+// extern Token *token;
 
 Token *new_token(TokenKind, Token *, char *, int);
 void set_token(Token *);

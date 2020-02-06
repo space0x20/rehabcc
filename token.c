@@ -1,6 +1,6 @@
 #include "rehabcc.h"
 
-Token *token = NULL;
+static Token *token = NULL;
 
 Token *new_token(TokenKind kind, Token *cur, char *str, int len)
 {
