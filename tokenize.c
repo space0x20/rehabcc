@@ -42,17 +42,6 @@ static TokenKindStr keywords[] = {
 };
 // clang-format on
 
-// 新しいトークンを作成して cur の次につなげる
-Token *new_token(TokenKind kind, Token *cur, char *str, int len)
-{
-    Token *tok = calloc(1, sizeof(Token));
-    tok->kind = kind;
-    tok->str = str;
-    tok->len = len;
-    cur->next = tok;
-    return tok;
-}
-
 // 識別子として受け入れる文字かどうかをチェックする
 static bool isident(char c)
 {
@@ -125,5 +114,5 @@ loop:
     }
 
     new_token(TK_EOF, cur, p, 0);
-    token = head.next;
+    set_token(head.next);
 }

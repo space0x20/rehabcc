@@ -19,9 +19,8 @@ struct Vector {
 Vector *new_vector(void);
 void push_back(Vector *vec, void *data);
 
-// Token ////////////////////////////////////////
+// token.h //////////////////////////////////////
 
-// トークンの種類
 typedef enum {
     TK_PLUS,   // +
     TK_MINUS,  // -
@@ -53,21 +52,20 @@ typedef enum {
     TK_EOF,    // 入力終わり
 } TokenKind;
 
-// トークン型
-
 typedef struct Token Token;
 
 struct Token {
-    TokenKind kind;
-    Token *next;
-
-    // トークンの元となる文字列の開始位置と長さ
-    char *str;
-    int len;
-
-    // TK_NUM の場合の整数値
-    int val;
+    TokenKind kind; // トークン種別
+    Token *next;    // 次のトークン
+    char *str;      // トークンの元となる文字列の開始位置
+    int len;        // トークンの元となる文字列の長さ
+    int val;        // 整数トークンの値
 };
+
+extern Token *token;
+
+Token *new_token(TokenKind, Token *, char *, int);
+void set_token(Token *);
 
 // Type /////////////////////////////////////////
 
@@ -174,9 +172,6 @@ struct Node {
 };
 
 // rehabcc.c ////////////////////////////////////
-
-// 現在着目しているトークン
-extern Token *token;
 
 // 入力プログラム
 extern char *user_input;
