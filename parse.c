@@ -35,29 +35,6 @@ static LVar *find_lvar(Token *tok)
     return NULL;
 }
 
-static Ast *new_node(AstKind kind)
-{
-    Ast *node = calloc(1, sizeof(Ast));
-    node->kind = kind;
-    return node;
-}
-
-static Ast *new_node_binop(AstKind kind, Ast *lhs, Ast *rhs)
-{
-    Ast *node = new_node(kind);
-    node->lhs = lhs;
-    node->rhs = rhs;
-    return node;
-}
-
-static Ast *new_node_num(int val)
-{
-    Ast *node = new_node(AST_NUM);
-    node->val = val;
-    node->type = int_type();
-    return node;
-}
-
 // 文法
 // program    = funcdef*
 // function   = type ident "(" paramlist? ")" block
