@@ -1,19 +1,5 @@
 #include "rehabcc.h"
 
-// 着目しているトークンが識別子の場合には、そのトークンを返す。
-// さらに着目しているトークンを一つすすめる。
-// 着目しているトークンが識別子でない場合は、NULLポインタを返す。
-// この場合着目しているトークンは進めない。
-static Token *consume_ident(void)
-{
-    if (token->kind == TK_IDENT) {
-        Token *tok = token;
-        token = token->next;
-        return tok;
-    }
-    return NULL;
-}
-
 // 着目しているトークンが型の場合には、その型を返す
 // そうでない場合には NULL ポインタを返す
 static Type *consume_type(void)
@@ -212,7 +198,7 @@ static Node *funcdef(void)
     }
 
     // 関数名
-    Token *tok = consume_ident();
+    Token *tok = consume_token(TK_IDENT);
     node->funcname = calloc(tok->len + 1, sizeof(char));
     strncpy(node->funcname, tok->str, tok->len);
 
@@ -226,7 +212,7 @@ static Node *funcdef(void)
             error("仮引数の型が宣言されていません");
         }
 
-        Token *tok = consume_ident();
+        Token *tok = consume_token(TK_IDENT);
         char *name = copy_str(tok);
         push_back(node->params, name);
 
@@ -311,7 +297,7 @@ static Node *stmt(void)
     Type *type = consume_type();
     if (type) {
         Node *node = new_node(ND_VARDECL);
-        Token *tok = consume_ident();
+        Token *tok = consume_token(TK_IDENT);
         LVar *lvar = find_lvar(tok);
         if (!lvar) {
             add_lvar(tok, type);
@@ -485,7 +471,7 @@ static Node *primary(void)
         return node;
     }
 
-    Token *tok = consume_ident();
+    Token *tok = consume_token(TK_IDENT);
     if (tok) {
         if (consume_token(TK_LPAREN)) {
             Node *node = new_node(ND_FUNCALL);
