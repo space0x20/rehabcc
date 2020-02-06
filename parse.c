@@ -124,7 +124,7 @@ static Ast *parse_function(void)
         if (!tok) {
             error_token("不正な引数の名前です");
         }
-        push_back(ast->params, copy_token_str(tok));
+        vector_push_back(ast->params, copy_token_str(tok));
         LVar *lvar = find_lvar(tok);
         if (!lvar) {
             add_lvar(tok, type);
@@ -139,7 +139,7 @@ static Ast *parse_function(void)
     ast->stmts = new_vector();
     expect_token(TK_LBRACE);
     while (!consume_token(TK_RBRACE)) {
-        push_back(ast->stmts, parse_stmt());
+        vector_push_back(ast->stmts, parse_stmt());
     }
 
     ast->locals = locals;
@@ -196,7 +196,7 @@ static Ast *parse_stmt(void)
         Ast *ast = new_ast(AST_BLOCK, NULL);
         ast->stmts = new_vector();
         while (!consume_token(TK_RBRACE)) {
-            push_back(ast->stmts, (void *)parse_stmt());
+            vector_push_back(ast->stmts, (void *)parse_stmt());
         }
         return ast;
     }
@@ -383,9 +383,9 @@ static Ast *parse_primary(void)
 static Vector *parse_arglist(void)
 {
     Vector *args = new_vector();
-    push_back(args, parse_expr());
+    vector_push_back(args, parse_expr());
     while (consume_token(TK_COLON)) {
-        push_back(args, parse_expr());
+        vector_push_back(args, parse_expr());
     }
     return args;
 }

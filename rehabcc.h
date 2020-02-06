@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// util.c ///////////////////////////////////////
+// vector.c /////////////////////////////////////
 
 typedef struct Vector Vector;
 
@@ -18,7 +18,7 @@ struct Vector {
 };
 
 Vector *new_vector(void);
-void push_back(Vector *vec, void *data);
+void vector_push_back(Vector *vec, void *data);
 
 // token.c //////////////////////////////////////
 

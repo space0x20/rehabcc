@@ -9,7 +9,7 @@ Vector *new_vector(void)
     return vec;
 }
 
-void push_back(Vector *vec, void *data)
+void vector_push_back(Vector *vec, void *data)
 {
     if (vec->size == vec->cap) {
         vec->cap *= 2;
