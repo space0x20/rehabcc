@@ -34,3 +34,24 @@ void expect_token(TokenKind kind)
     }
     token = token->next;
 }
+
+void error_token(char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+
+    int pos = token->str - user_input;
+    fprintf(stderr, "%s\n", user_input);
+    fprintf(stderr, "%*s", pos, ""); // pos個の空白を出力
+    fprintf(stderr, "^ ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
+char *copy_token_str(Token *tok)
+{
+    char *str = calloc(tok->len + 1, sizeof(char));
+    strncpy(str, tok->str, tok->len);
+    return str;
+}

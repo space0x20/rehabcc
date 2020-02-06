@@ -67,6 +67,8 @@ Token *new_token(TokenKind, Token *, char *, int);
 void set_token(Token *);
 Token *consume_token(TokenKind);
 void expect_token(TokenKind);
+void error_token(char *, ...);
+char *copy_token_str(Token *);
 
 // type.c ///////////////////////////////////////
 
@@ -99,9 +101,8 @@ struct LVar {
     Type *type; // 変数の型
 };
 
-// Node /////////////////////////////////////////
+// ast.c ////////////////////////////////////////
 
-// 抽象構文木のノードの種類
 typedef enum {
     AST_ADD,
     AST_SUB,
@@ -131,6 +132,7 @@ typedef struct Ast Ast;
 
 struct Ast {
     AstKind kind;
+    Type *type;
     Ast *lhs;
     Ast *rhs;
 
@@ -168,14 +170,12 @@ struct Ast {
     // kind = ND_DEREF
     Ast *unary;
 
-    // kind = ND_FUNCDECL
-    // kind = ND_LVAR
-    Type *type;
-
     // kind = ND_ADD_PTR
     // ポインタと整数の足し算の場合、データ型のサイズ
     int type_size;
 };
+
+Ast *new_ast(AstKind, Type *);
 
 // rehabcc.c ////////////////////////////////////
 

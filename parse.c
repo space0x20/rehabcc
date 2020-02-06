@@ -119,37 +119,39 @@ static void parse_program(void)
 
 static Ast *parse_function(void)
 {
-    Ast *node = new_node(AST_FUNCTION);
+    Ast *ast;
+    Token *tok;
+    Type *type;
 
-    node->type = parse_type();
-    if (!node->type) {
-        error("関数の返り値型が宣言されていません");
+    // return type
+    type = parse_type();
+    if (!type) {
+        error_token("関数の返り値の型が宣言されていません");
     }
+    ast = new_ast(AST_FUNCTION, type);
 
-    // 関数名
-    Token *tok = consume_token(TK_IDENT);
-    node->funcname = calloc(tok->len + 1, sizeof(char));
-    strncpy(node->funcname, tok->str, tok->len);
+    // function name
+    tok = consume_token(TK_IDENT);
+    ast->funcname = copy_token_str(tok);
 
-    // 引数
-    node->params = new_vector();
+    // parameter
+    ast->params = new_vector();
     init_lvar();
     expect_token(TK_LPAREN);
     while (!consume_token(TK_RPAREN)) {
-        Type *type = parse_type();
+        type = parse_type();
         if (!type) {
-            error("仮引数の型が宣言されていません");
+            error_token("仮引数の型が宣言されていません");
         }
-
-        Token *tok = consume_token(TK_IDENT);
-        char *name = copy_str(tok);
-        push_back(node->params, name);
-
+        tok = consume_token(TK_IDENT);
+        if (!tok) {
+            error_token("不正な引数の名前です");
+        }
+        push_back(ast->params, copy_token_str(tok));
         LVar *lvar = find_lvar(tok);
         if (!lvar) {
             add_lvar(tok, type);
         }
-
         if (!consume_token(TK_COLON)) {
             expect_token(TK_RPAREN);
             break;
@@ -157,14 +159,14 @@ static Ast *parse_function(void)
     }
 
     // 本体
-    node->stmts = new_vector();
+    ast->stmts = new_vector();
     expect_token(TK_LBRACE);
     while (!consume_token(TK_RBRACE)) {
-        push_back(node->stmts, parse_stmt());
+        push_back(ast->stmts, parse_stmt());
     }
 
-    node->locals = locals;
-    return node;
+    ast->locals = locals;
+    return ast;
 }
 
 static Ast *parse_stmt(void)
