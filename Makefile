@@ -10,8 +10,11 @@ rehabcc_debug: $(OBJS)
 
 $(OBJS): rehabcc.h
 
-test: rehabcc
+test: rehabcc test/helper.o
 	./test.sh
+
+test/helper.o: test/helper.c
+	$(CC) -o test/helper.o -c test/helper.c
 
 clean:
 	rm -f rehabcc *.o *.s tmp*
