@@ -21,16 +21,6 @@ static Type *consume_type(void)
     return type;
 }
 
-// 次のトークンが期待している種類のものであれば、トークンを一つ進める。
-// それ以外の場合であればエラーを出す。
-static void expect(TokenKind kind)
-{
-    if (token->kind != kind) {
-        error_at(token->str, "%d ではありません", kind);
-    }
-    token = token->next;
-}
-
 // 次のトークンが数値の場合、トークンを一つ進めて数値を返す。
 // それ以外の場合はエラーを出す。
 static int expect_number(void)
@@ -205,7 +195,7 @@ static Node *funcdef(void)
     // 引数
     node->params = new_vector();
     init_lvar();
-    expect(TK_LPAREN);
+    expect_token(TK_LPAREN);
     while (!consume_token(TK_RPAREN)) {
         Type *type = consume_type();
         if (!type) {
@@ -222,14 +212,14 @@ static Node *funcdef(void)
         }
 
         if (!consume_token(TK_COLON)) {
-            expect(TK_RPAREN);
+            expect_token(TK_RPAREN);
             break;
         }
     }
 
     // 本体
     node->stmts = new_vector();
-    expect(TK_LBRACE);
+    expect_token(TK_LBRACE);
     while (!consume_token(TK_RBRACE)) {
         push_back(node->stmts, stmt());
     }
@@ -243,15 +233,15 @@ static Node *stmt(void)
     if (consume_token(TK_RETURN)) {
         Node *node = new_node(ND_RETURN);
         node->ret = expr();
-        expect(TK_SCOLON);
+        expect_token(TK_SCOLON);
         return node;
     }
 
     if (consume_token(TK_IF)) {
         Node *node = new_node(ND_IF);
-        expect(TK_LPAREN);
+        expect_token(TK_LPAREN);
         node->cond = expr();
-        expect(TK_RPAREN);
+        expect_token(TK_RPAREN);
         node->then = stmt();
         node->els = consume_token(TK_ELSE) ? stmt() : NULL;
         return node;
@@ -259,27 +249,27 @@ static Node *stmt(void)
 
     if (consume_token(TK_WHILE)) {
         Node *node = new_node(ND_WHILE);
-        expect(TK_LPAREN);
+        expect_token(TK_LPAREN);
         node->cond = expr();
-        expect(TK_RPAREN);
+        expect_token(TK_RPAREN);
         node->stmt = stmt();
         return node;
     }
 
     if (consume_token(TK_FOR)) {
         Node *node = new_node(ND_FOR);
-        expect(TK_LPAREN);
+        expect_token(TK_LPAREN);
         if (!consume_token(TK_SCOLON)) {
             node->init = expr();
-            expect(TK_SCOLON);
+            expect_token(TK_SCOLON);
         }
         if (!consume_token(TK_SCOLON)) {
             node->cond = expr();
-            expect(TK_SCOLON);
+            expect_token(TK_SCOLON);
         }
         if (!consume_token(TK_RPAREN)) {
             node->update = expr();
-            expect(TK_RPAREN);
+            expect_token(TK_RPAREN);
         }
         node->stmt = stmt();
         return node;
@@ -302,12 +292,12 @@ static Node *stmt(void)
         if (!lvar) {
             add_lvar(tok, type);
         }
-        expect(TK_SCOLON);
+        expect_token(TK_SCOLON);
         return node;
     }
 
     Node *node = expr();
-    expect(TK_SCOLON);
+    expect_token(TK_SCOLON);
     return node;
 }
 
@@ -467,7 +457,7 @@ static Node *primary(void)
 {
     if (consume_token(TK_LPAREN)) {
         Node *node = expr();
-        expect(TK_RPAREN);
+        expect_token(TK_RPAREN);
         return node;
     }
 
@@ -482,7 +472,7 @@ static Node *primary(void)
             }
             else {
                 node->args = arglist();
-                expect(TK_RPAREN);
+                expect_token(TK_RPAREN);
             }
             // Todo : 関数の戻り値型を node->type にセットする
             return node;

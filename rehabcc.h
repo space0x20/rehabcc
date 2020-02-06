@@ -67,6 +67,7 @@ extern Token *token;
 Token *new_token(TokenKind, Token *, char *, int);
 void set_token(Token *);
 Token *consume_token(TokenKind);
+void expect_token(TokenKind);
 
 // Type /////////////////////////////////////////
 

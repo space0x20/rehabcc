@@ -26,3 +26,11 @@ Token *consume_token(TokenKind kind)
     }
     return NULL;
 }
+
+void expect_token(TokenKind kind)
+{
+    if (token->kind != kind) {
+        error_at(token->str, "%d ではありません", kind);
+    }
+    token = token->next;
+}
