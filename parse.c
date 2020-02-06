@@ -417,13 +417,12 @@ static Ast *parse_primary(void)
 
     tok = consume_token(TK_NUM);
     if (tok) {
-        Ast *node = new_node(AST_NUM);
-        node->val = tok->val;
-        node->type = int_type();
-        return node;
+        ast = new_ast(AST_NUM, int_type());
+        ast->val = tok->val;
+        return ast;
     }
 
-    error("パーズできません");
+    error_token("パーズできません");
 }
 
 static Vector *parse_arglist(void)
