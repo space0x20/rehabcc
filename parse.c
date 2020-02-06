@@ -394,18 +394,16 @@ static Ast *parse_primary(void)
     tok = consume_token(TK_IDENT);
     if (tok) {
         if (consume_token(TK_LPAREN)) {
-            Ast *node = new_node(AST_FUNCALL);
-            node->func = calloc(tok->len + 1, sizeof(char));
-            strncpy(node->func, tok->str, tok->len);
+            ast = new_ast(AST_FUNCALL, NULL); // Todo : NULL の代わりに関数の戻り値型を指定する
+            ast->func = copy_token_str(tok);
             if (consume_token(TK_RPAREN)) {
-                node->args = new_vector();
+                ast->args = new_vector();
             }
             else {
-                node->args = parse_arglist();
+                ast->args = parse_arglist();
                 expect_token(TK_RPAREN);
             }
-            // Todo : 関数の戻り値型を node->type にセットする
-            return node;
+            return ast;
         }
 
         Ast *node = new_node(AST_LVAR);
