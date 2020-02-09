@@ -95,7 +95,7 @@ try 4 'int main() { int a; a = sizeof(a); return a; }'
 try 8 'int main() { int a; int *b; a = sizeof(b); return a; }'
 
 # ステップ21
-try 1 'int main() { int a[10]; return 1; }'
+try 3 'int main() { int a[10]; *a = 1; *(a + 2) = 2; return *a + *(a + 2); }'
 
 echo OK
 rm -f tmp tmp.s

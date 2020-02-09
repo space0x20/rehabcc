@@ -50,10 +50,14 @@ static void gen(Ast *node)
     }
     case AST_LVAR: {
         // 変数を右辺値として評価する
-        gen_lval(node); // スタックトップに変数のアドレスが来る
-        println("  pop rax");
-        println("  mov rax, [rax]"); // rax に変数の値を読み出す
-        println("  push rax");
+        // スタックトップに変数のアドレスが来る
+        gen_lval(node);
+        if (node->lvar->type->bt != T_ARRAY) {
+            // 配列でない場合は変数の中身を読み出す
+            println("  pop rax");
+            println("  mov rax, [rax]"); // rax に変数の値を読み出す
+            println("  push rax");
+        }
         return;
     }
     case AST_ASSIGN: {
