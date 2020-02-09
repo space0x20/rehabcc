@@ -89,7 +89,7 @@ Type *int_type(void);
 Type *ptr_type(Type *);
 Type *deref_type(Type *);
 
-// local.c //////////////////////////////////////
+// env.c ////////////////////////////////////////
 
 typedef struct LVar LVar;
 
@@ -186,7 +186,6 @@ void error_at(char *loc, char *fmt, ...);
 // tokenize.c ///////////////////////////////////
 
 void tokenize(void);
-char *copy_str(Token *tok);
 
 // parse.c //////////////////////////////////////
 

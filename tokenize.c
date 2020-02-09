@@ -48,13 +48,6 @@ static bool isident(char c)
     return isalnum(c) || c == '_';
 }
 
-char *copy_str(Token *tok)
-{
-    char *str = calloc(tok->len + 1, sizeof(char));
-    strncpy(str, tok->str, tok->len);
-    return str;
-}
-
 // 入力文字列をトークン分割して最初のトークンを返す
 void tokenize(void)
 {
