@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// util.c ///////////////////////////////////////
+
+int align(int, int);
+
 // vector.c /////////////////////////////////////
 
 typedef struct Vector Vector;
@@ -23,34 +27,36 @@ void vector_push_back(Vector *vec, void *data);
 // token.c //////////////////////////////////////
 
 typedef enum {
-    TK_PLUS,   // +
-    TK_MINUS,  // -
-    TK_MUL,    // *
-    TK_DIV,    // /
-    TK_AND,    // &
-    TK_LPAREN, // (
-    TK_RPAREN, // )
-    TK_LBRACE, // {
-    TK_RBRACE, // }
-    TK_EQ,     // ==
-    TK_NE,     // !=
-    TK_LT,     // <
-    TK_LE,     // <=
-    TK_GT,     // >
-    TK_GE,     // >=
-    TK_ASSIGN, // =
-    TK_COLON,  // ,
-    TK_SCOLON, // ;
-    TK_RETURN, // return
-    TK_IF,     // if
-    TK_ELSE,   // else
-    TK_WHILE,  // while
-    TK_FOR,    // for
-    TK_INT,    // int
-    TK_SIZEOF, // sizeof
-    TK_NUM,    // 整数
-    TK_IDENT,  // 識別子
-    TK_EOF,    // 入力終わり
+    TK_PLUS,     // +
+    TK_MINUS,    // -
+    TK_MUL,      // *
+    TK_DIV,      // /
+    TK_AND,      // &
+    TK_LPAREN,   // (
+    TK_RPAREN,   // )
+    TK_LBRACE,   // {
+    TK_RBRACE,   // }
+    TK_LBRACKET, // [
+    TK_RBRACKET, // ]
+    TK_EQ,       // ==
+    TK_NE,       // !=
+    TK_LT,       // <
+    TK_LE,       // <=
+    TK_GT,       // >
+    TK_GE,       // >=
+    TK_ASSIGN,   // =
+    TK_COLON,    // ,
+    TK_SCOLON,   // ;
+    TK_RETURN,   // return
+    TK_IF,       // if
+    TK_ELSE,     // else
+    TK_WHILE,    // while
+    TK_FOR,      // for
+    TK_INT,      // int
+    TK_SIZEOF,   // sizeof
+    TK_NUM,      // 整数
+    TK_IDENT,    // 識別子
+    TK_EOF,      // 入力終わり
 } TokenKind;
 
 typedef struct Token Token;
@@ -66,15 +72,17 @@ struct Token {
 Token *new_token(TokenKind, Token *, char *, int);
 void set_token(Token *);
 Token *consume_token(TokenKind);
-void expect_token(TokenKind);
+Token *expect_token(TokenKind);
 void error_token(char *, ...);
 char *copy_token_str(Token *);
 
 // type.c ///////////////////////////////////////
 
 typedef enum {
+    T_VOID,
     T_INT,
     T_PTR,
+    T_ARRAY,
 } BasicType;
 
 typedef struct Type Type;
@@ -83,11 +91,14 @@ struct Type {
     BasicType bt;
     Type *ptr_to;
     int nbyte;
+    int array_size;
 };
 
+Type *void_type(void);
 Type *int_type(void);
 Type *ptr_type(Type *);
 Type *deref_type(Type *);
+Type *array_type(Type *, int);
 
 // env.c ////////////////////////////////////////
 

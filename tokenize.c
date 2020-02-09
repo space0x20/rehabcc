@@ -18,6 +18,8 @@ static TokenKindStr symbols[] = {
     {TK_RPAREN, ")"},
     {TK_LBRACE, "{"},
     {TK_RBRACE, "}"},
+    {TK_LBRACKET, "["},
+    {TK_RBRACKET, "]"},
     {TK_EQ, "=="},
     {TK_NE, "!="},
     {TK_LE, "<="},

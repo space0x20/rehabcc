@@ -9,6 +9,7 @@ void init_lvar(void)
     lvar->name = NULL;
     lvar->len = 0;
     lvar->offset = 0;
+    lvar->type = void_type();
     locals = lvar;
 }
 
@@ -23,7 +24,7 @@ LVar *add_lvar(Token *tok, Type *type)
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
-    lvar->offset = locals->offset + 8;
+    lvar->offset = align(locals->offset + locals->type->nbyte, 8);
     lvar->type = type;
     locals = lvar;
     return lvar;

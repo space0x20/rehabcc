@@ -27,12 +27,16 @@ Token *consume_token(TokenKind kind)
     return NULL;
 }
 
-void expect_token(TokenKind kind)
+Token *expect_token(TokenKind kind)
 {
-    if (token->kind != kind) {
+    if (token->kind == kind) {
+        Token *t = token;
+        token = token->next;
+        return t;
+    }
+    else {
         error_at(token->str, "%d ではありません", kind);
     }
-    token = token->next;
 }
 
 void error_token(char *fmt, ...)

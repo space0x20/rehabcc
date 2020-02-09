@@ -162,7 +162,9 @@ static void gen(Ast *node)
         println("%s:", node->funcname);
         println("  push rbp");
         println("  mov rbp, rsp");
-        println("  sub rsp, %d", node->locals->offset);
+
+        // ローカル変数の領域
+        println("  sub rsp, %d", align(node->locals->offset + node->locals->type->nbyte, 8));
 
         // 引数をスタックにコピーする
         for (int i = 0; i < node->params->size; i++) {

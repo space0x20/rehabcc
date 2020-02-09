@@ -10,7 +10,7 @@
 //            | "while" "(" expr ")" stmt
 //            | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //            | "return" expr ";"
-//            | type ident;
+//            | type ident ("[" num "]")*;
 // expr       = assign
 // assign     = equality ("=" assign)?
 // equality   = relational ("==" relational | "!=" relational)*
@@ -26,6 +26,7 @@
 //            | ident "(" arglist? ")" ... 関数呼び出し
 //            | ident                  ... 変数
 //            | "(" expr ")"
+//
 // arglist    = expr ("," expr)*
 // paramlist  = type ident ("," type ident)*
 // type       = "int" "*"*
@@ -170,6 +171,11 @@ static Ast *parse_stmt(void)
     if (type) {
         Ast *ast = new_ast(AST_VARDECL, NULL);
         Token *tok = consume_token(TK_IDENT);
+        while (consume_token(TK_LBRACKET)) {
+            Token *num = expect_token(TK_NUM);
+            type = array_type(type, num->val);
+            expect_token(TK_RBRACKET);
+        }
         LVar *lvar = find_lvar(tok);
         if (lvar) {
             error_token("変数を重複して宣言しています");
