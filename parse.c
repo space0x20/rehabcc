@@ -1,40 +1,5 @@
 #include "rehabcc.h"
 
-static void init_lvar(void)
-{
-    LVar *lvar = calloc(1, sizeof(LVar));
-    lvar->next = NULL;
-    lvar->name = NULL;
-    lvar->len = 0;
-    lvar->offset = 0;
-    locals = lvar;
-}
-
-// ローカル変数を追加する
-static LVar *add_lvar(Token *tok, Type *type)
-{
-    LVar *lvar = calloc(1, sizeof(LVar));
-    lvar->next = locals;
-    lvar->name = tok->str;
-    lvar->len = tok->len;
-    lvar->offset = locals->offset + 8;
-    lvar->type = type;
-    locals = lvar;
-    return lvar;
-}
-
-// ローカル変数を検索する
-// 見つかれば LVar へのポインタ、見つからなければ NULL
-static LVar *find_lvar(Token *tok)
-{
-    for (LVar *lvar = locals; lvar != NULL; lvar = lvar->next) {
-        if (lvar->len == tok->len && !memcmp(lvar->name, tok->str, lvar->len)) {
-            return lvar;
-        }
-    }
-    return NULL;
-}
-
 // 文法
 // program    = function*
 // function   = type ident "(" paramlist? ")" block
@@ -142,7 +107,7 @@ static Ast *parse_function(void)
         vector_push_back(ast->stmts, parse_stmt());
     }
 
-    ast->locals = locals;
+    ast->locals = get_locals();
     return ast;
 }
 

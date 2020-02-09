@@ -89,7 +89,7 @@ Type *int_type(void);
 Type *ptr_type(Type *);
 Type *deref_type(Type *);
 
-// LVar /////////////////////////////////////////
+// local.c //////////////////////////////////////
 
 typedef struct LVar LVar;
 
@@ -100,6 +100,11 @@ struct LVar {
     int offset; // RBP からのオフセット
     Type *type; // 変数の型
 };
+
+void init_lvar(void);
+LVar *get_locals(void);
+LVar *add_lvar(Token *, Type *);
+LVar *find_lvar(Token *);
 
 // ast.c ////////////////////////////////////////
 
@@ -173,9 +178,6 @@ extern char *user_input;
 
 // 構文木列
 extern Ast *code[];
-
-// ローカル変数の連結リスト
-extern LVar *locals;
 
 // エラー処理
 void error(char *fmt, ...);
