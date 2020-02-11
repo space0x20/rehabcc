@@ -250,7 +250,7 @@ static Ast *parse_add(void)
         if (consume_token(TK_PLUS)) {
             // ポインタと整数の足し算
             // todo: ポインタが左辺に来る場合しか取り扱っていない
-            if (ast->kind == AST_LVAR && ast->lvar->type->bt == T_PTR) {
+            if (ast->kind == AST_LVAR && (ast->lvar->type->bt == T_PTR || ast->lvar->type->bt == T_ARRAY)) {
                 ast = new_ast_binary(AST_ADD_PTR, ast->lvar->type, ast, parse_mul());
             }
             else {
