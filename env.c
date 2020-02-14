@@ -24,7 +24,7 @@ LVar *add_lvar(Token *tok, Type *type)
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
-    lvar->offset = align(locals->offset + locals->type->nbyte, 8);
+    lvar->offset = align(locals->offset + type->nbyte, 8);
     lvar->type = type;
     locals = lvar;
     return lvar;
