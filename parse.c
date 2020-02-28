@@ -24,7 +24,7 @@
 //            | "sizeof" unary
 // primary    = num
 //            | ident "(" arglist? ")" ... 関数呼び出し
-//            | ident                  ... 変数
+//            | ident ("[" expr "]")*  ... 変数
 //            | "(" expr ")"
 //
 // arglist    = expr ("," expr)*
@@ -338,6 +338,11 @@ static struct ast *parse_primary(void)
         }
         ast = new_ast(AST_LVAR, lvar->type);
         ast->lvar = lvar;
+        if (consume_token(TK_LBRACKET)) {
+            struct ast *add = new_ast_binary(AST_ADD_PTR, int_type(), ast, parse_expr());
+            ast = new_ast_unary(AST_DEREF, deref_type(lvar->type), add);
+            expect_token(TK_RBRACKET);
+        }
         return ast;
     }
 
