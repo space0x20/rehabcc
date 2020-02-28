@@ -94,20 +94,19 @@ struct type *ptr_type(struct type *);
 struct type *deref_type(struct type *);
 struct type *array_type(struct type *, int);
 
-// env.c ////////////////////////////////////////
+// var.c ////////////////////////////////////////
 
-struct lvar {
-    struct lvar *next; // 次のローカル変数またはNULL
-    char *name;        // ローカル変数名
-    int len;           // 変数名の長さ
-    int offset;        // RBP からのオフセット
+struct var {
+    struct var *next;  // 次のローカル変数またはNULL
     struct type *type; // 変数の型
+    char *name;        // ローカル変数名
+    int offset;        // RBP からのオフセット
 };
 
-void init_lvar(void);
-struct lvar *get_locals(void);
-struct lvar *add_lvar(struct token *, struct type *);
-struct lvar *find_lvar(struct token *);
+void clear_local_vars(void);
+struct var *get_local_vars(void);
+struct var *add_local_var(struct token *, struct type *);
+struct var *find_local_var(struct token *);
 
 // ast.c ////////////////////////////////////////
 
@@ -159,11 +158,11 @@ struct ast {
     struct vector *stmts;
 
     // kind = ND_LVAR の場合に使う
-    struct lvar *lvar;
+    struct var *var;
 
     // AST_FUNCTION, AST_FUNCALL
     char *funcname;
-    struct lvar *locals;
+    struct var *locals;
     struct vector *params;
 };
 

@@ -79,7 +79,7 @@ static struct ast *parse_function(void)
 
     // parameter
     ast->params = new_vector();
-    init_lvar();
+    clear_local_vars();
     expect_token(TK_LPAREN);
     while (!consume_token(TK_RPAREN)) {
         type = parse_type();
@@ -91,9 +91,9 @@ static struct ast *parse_function(void)
             error_token("不正な引数の名前です");
         }
         vector_push_back(ast->params, copy_token_str(tok));
-        struct lvar *lvar = find_lvar(tok);
+        struct var *lvar = find_local_var(tok);
         if (!lvar) {
-            add_lvar(tok, type);
+            add_local_var(tok, type);
         }
         if (!consume_token(TK_COLON)) {
             expect_token(TK_RPAREN);
@@ -108,7 +108,7 @@ static struct ast *parse_function(void)
         vector_push_back(ast->stmts, parse_stmt());
     }
 
-    ast->locals = get_locals();
+    ast->locals = get_local_vars();
     return ast;
 }
 
@@ -176,11 +176,11 @@ static struct ast *parse_stmt(void)
             type = array_type(type, num->val);
             expect_token(TK_RBRACKET);
         }
-        struct lvar *lvar = find_lvar(tok);
+        struct var *lvar = find_local_var(tok);
         if (lvar) {
             error_token("変数を重複して宣言しています");
         }
-        add_lvar(tok, type);
+        add_local_var(tok, type);
         expect_token(TK_SCOLON);
         return ast;
     }
@@ -250,8 +250,8 @@ static struct ast *parse_add(void)
         if (consume_token(TK_PLUS)) {
             // ポインタと整数の足し算
             // todo: ポインタが左辺に来る場合しか取り扱っていない
-            if (ast->kind == AST_LVAR && (ast->lvar->type->bt == T_PTR || ast->lvar->type->bt == T_ARRAY)) {
-                ast = new_ast_binary(AST_ADD_PTR, ast->lvar->type, ast, parse_mul());
+            if (ast->kind == AST_LVAR && (ast->var->type->bt == T_PTR || ast->var->type->bt == T_ARRAY)) {
+                ast = new_ast_binary(AST_ADD_PTR, ast->var->type, ast, parse_mul());
             }
             else {
                 ast = new_ast_binary(AST_ADD, int_type(), ast, parse_mul());
@@ -332,12 +332,12 @@ static struct ast *parse_primary(void)
             return ast;
         }
 
-        struct lvar *lvar = find_lvar(tok);
+        struct var *lvar = find_local_var(tok);
         if (!lvar) {
             error_token("定義されていない変数を使用しています");
         }
         ast = new_ast(AST_LVAR, lvar->type);
-        ast->lvar = lvar;
+        ast->var = lvar;
         if (consume_token(TK_LBRACKET)) {
             struct ast *add = new_ast_binary(AST_ADD_PTR, int_type(), ast, parse_expr());
             ast = new_ast_unary(AST_DEREF, deref_type(lvar->type), add);

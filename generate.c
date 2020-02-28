@@ -27,7 +27,7 @@ static void gen_lval(struct ast *node)
     case AST_LVAR: {
         // 変数には RBP - offset でアクセスできる
         println("  mov rax, rbp");
-        println("  sub rax, %d", node->lvar->offset);
+        println("  sub rax, %d", node->var->offset);
         println("  push rax");
         return;
     }
@@ -52,7 +52,7 @@ static void gen(struct ast *node)
         // 変数を右辺値として評価する
         // スタックトップに変数のアドレスが来る
         gen_lval(node);
-        if (node->lvar->type->bt != T_ARRAY) {
+        if (node->var->type->bt != T_ARRAY) {
             // 配列でない場合は変数の中身を読み出す
             println("  pop rax");
             println("  mov rax, [rax]"); // rax に変数の値を読み出す
@@ -168,7 +168,9 @@ static void gen(struct ast *node)
         println("  mov rbp, rsp");
 
         // ローカル変数の領域
-        println("  sub rsp, %d", align(node->locals->offset + node->locals->type->nbyte, 8));
+        if (node->locals) {
+            println("  sub rsp, %d", node->locals->offset);
+        }
 
         // 引数をスタックにコピーする
         for (int i = 0; i < node->params->size; i++) {
@@ -243,7 +245,7 @@ static void gen(struct ast *node)
         println("  movzb rax, al");
         break;
     case AST_ADD_PTR: {
-        println("  imul rdi, %d", node->lhs->lvar->type->ptr_to->nbyte);
+        println("  imul rdi, %d", node->lhs->var->type->ptr_to->nbyte);
         println("  add rax, rdi");
         break;
     }
