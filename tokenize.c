@@ -1,14 +1,14 @@
 #include "rehabcc.h"
 
-typedef struct {
-    TokenKind kind;
+struct token_kind_str {
+    enum token_kind kind;
     char *str;
-} TokenKindStr;
+};
 
 // clang-format off
 // トークンとして認識する記号たち
 // 列挙順にマッチングを行うため、たとえば <= を < よりも先に並べる必要がある
-static TokenKindStr symbols[] = {
+static struct token_kind_str symbols[] = {
     {TK_PLUS, "+"},
     {TK_MINUS, "-"},
     {TK_MUL, "*"},
@@ -32,7 +32,7 @@ static TokenKindStr symbols[] = {
     {TK_EOF, ""},  // 最後においておくこと
 };
 
-static TokenKindStr keywords[] = {
+static struct token_kind_str keywords[] = {
     {TK_RETURN, "return"},
     {TK_SIZEOF, "sizeof"},
     {TK_IF, "if"},
@@ -53,9 +53,9 @@ static bool isident(char c)
 // 入力文字列をトークン分割して最初のトークンを返す
 void tokenize(void)
 {
-    Token head;
+    struct token head;
     head.next = NULL;
-    Token *cur = &head;
+    struct token *cur = &head;
     char *p = user_input;
 
 loop:

@@ -13,20 +13,18 @@ int align(int, int);
 
 // vector.c /////////////////////////////////////
 
-typedef struct Vector Vector;
-
-struct Vector {
+struct vector {
     void **data;
     int size;
     int cap;
 };
 
-Vector *new_vector(void);
-void vector_push_back(Vector *vec, void *data);
+struct vector *new_vector(void);
+void vector_push_back(struct vector *vec, void *data);
 
 // token.c //////////////////////////////////////
 
-typedef enum {
+enum token_kind {
     TK_PLUS,     // +
     TK_MINUS,    // -
     TK_MUL,      // *
@@ -57,69 +55,63 @@ typedef enum {
     TK_NUM,      // 整数
     TK_IDENT,    // 識別子
     TK_EOF,      // 入力終わり
-} TokenKind;
-
-typedef struct Token Token;
-
-struct Token {
-    TokenKind kind; // トークン種別
-    Token *next;    // 次のトークン
-    char *str;      // トークンの元となる文字列の開始位置
-    int len;        // トークンの元となる文字列の長さ
-    int val;        // 整数トークンの値
 };
 
-Token *new_token(TokenKind, Token *, char *, int);
-void set_token(Token *);
-Token *consume_token(TokenKind);
-Token *expect_token(TokenKind);
+struct token {
+    enum token_kind kind; // トークン種別
+    struct token *next;   // 次のトークン
+    char *str;            // トークンの元となる文字列の開始位置
+    int len;              // トークンの元となる文字列の長さ
+    int val;              // 整数トークンの値
+};
+
+struct token *new_token(enum token_kind, struct token *, char *, int);
+void set_token(struct token *);
+struct token *consume_token(enum token_kind);
+struct token *expect_token(enum token_kind);
 void error_token(char *, ...);
-char *copy_token_str(Token *);
+char *copy_token_str(struct token *);
 
 // type.c ///////////////////////////////////////
 
-typedef enum {
+enum basic_type {
     T_VOID,
     T_INT,
     T_PTR,
     T_ARRAY,
-} BasicType;
+};
 
-typedef struct Type Type;
-
-struct Type {
-    BasicType bt;
-    Type *ptr_to;
+struct type {
+    enum basic_type bt;
+    struct type *ptr_to;
     int nbyte;
     int array_size;
 };
 
-Type *void_type(void);
-Type *int_type(void);
-Type *ptr_type(Type *);
-Type *deref_type(Type *);
-Type *array_type(Type *, int);
+struct type *void_type(void);
+struct type *int_type(void);
+struct type *ptr_type(struct type *);
+struct type *deref_type(struct type *);
+struct type *array_type(struct type *, int);
 
 // env.c ////////////////////////////////////////
 
-typedef struct LVar LVar;
-
-struct LVar {
-    LVar *next; // 次のローカル変数またはNULL
-    char *name; // ローカル変数名
-    int len;    // 変数名の長さ
-    int offset; // RBP からのオフセット
-    Type *type; // 変数の型
+struct lvar {
+    struct lvar *next; // 次のローカル変数またはNULL
+    char *name;        // ローカル変数名
+    int len;           // 変数名の長さ
+    int offset;        // RBP からのオフセット
+    struct type *type; // 変数の型
 };
 
 void init_lvar(void);
-LVar *get_locals(void);
-LVar *add_lvar(Token *, Type *);
-LVar *find_lvar(Token *);
+struct lvar *get_locals(void);
+struct lvar *add_lvar(struct token *, struct type *);
+struct lvar *find_lvar(struct token *);
 
 // ast.c ////////////////////////////////////////
 
-typedef enum {
+enum ast_kind {
     AST_ADD,
     AST_SUB,
     AST_MUL,
@@ -142,15 +134,13 @@ typedef enum {
     AST_VARDECL,  // 変数宣言
     AST_LVAR,     // ローカル変数
     AST_ADD_PTR,  // ポインタの足し算
-} AstKind;
+};
 
-typedef struct Ast Ast;
-
-struct Ast {
-    AstKind kind;
-    Type *type;
-    Ast *lhs;
-    Ast *rhs;
+struct ast {
+    enum ast_kind kind;
+    struct type *type;
+    struct ast *lhs;
+    struct ast *rhs;
 
     // kind = ND_NUM の場合整数値
     int val;
@@ -158,29 +148,29 @@ struct Ast {
     // if (cond) { then } else { els }
     // while (cond) { stmt }
     // for (init; cond; update) { stmt }
-    Ast *cond;
-    Ast *then;
-    Ast *els;
-    Ast *stmt;
-    Ast *init;
-    Ast *update;
+    struct ast *cond;
+    struct ast *then;
+    struct ast *els;
+    struct ast *stmt;
+    struct ast *init;
+    struct ast *update;
 
     // kind = ND_BLOCK
-    Vector *stmts;
+    struct vector *stmts;
 
     // kind = ND_LVAR の場合に使う
-    LVar *lvar;
+    struct lvar *lvar;
 
     // AST_FUNCTION, AST_FUNCALL
     char *funcname;
-    LVar *locals;
-    Vector *params;
+    struct lvar *locals;
+    struct vector *params;
 };
 
-Ast *new_ast(AstKind, Type *);
-Ast *new_ast_unary(AstKind, Type *, Ast *);
-Ast *new_ast_binary(AstKind, Type *, Ast *, Ast *);
-Ast *new_ast_num(int val);
+struct ast *new_ast(enum ast_kind, struct type *);
+struct ast *new_ast_unary(enum ast_kind, struct type *, struct ast *);
+struct ast *new_ast_binary(enum ast_kind, struct type *, struct ast *, struct ast *);
+struct ast *new_ast_num(int val);
 
 // rehabcc.c ////////////////////////////////////
 
@@ -188,7 +178,7 @@ Ast *new_ast_num(int val);
 extern char *user_input;
 
 // 構文木列
-extern Ast *code[];
+extern struct ast *code[];
 
 // エラー処理
 void error(char *fmt, ...);

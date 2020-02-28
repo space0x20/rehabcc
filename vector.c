@@ -1,15 +1,15 @@
 #include "rehabcc.h"
 
-Vector *new_vector(void)
+struct vector *new_vector(void)
 {
-    Vector *vec = calloc(1, sizeof(Vector));
+    struct vector *vec = calloc(1, sizeof(struct vector));
     vec->data = calloc(16, sizeof(void *));
     vec->size = 0;
     vec->cap = 16;
     return vec;
 }
 
-void vector_push_back(Vector *vec, void *data)
+void vector_push_back(struct vector *vec, void *data)
 {
     if (vec->size == vec->cap) {
         vec->cap *= 2;

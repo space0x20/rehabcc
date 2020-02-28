@@ -1,10 +1,10 @@
 #include "rehabcc.h"
 
-static Token *token = NULL;
+static struct token *token = NULL;
 
-Token *new_token(TokenKind kind, Token *cur, char *str, int len)
+struct token *new_token(enum token_kind kind, struct token *cur, char *str, int len)
 {
-    Token *tok = calloc(1, sizeof(Token));
+    struct token *tok = calloc(1, sizeof(struct token));
     tok->kind = kind;
     tok->str = str;
     tok->len = len;
@@ -12,25 +12,25 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len)
     return tok;
 }
 
-void set_token(Token *t)
+void set_token(struct token *t)
 {
     token = t;
 }
 
-Token *consume_token(TokenKind kind)
+struct token *consume_token(enum token_kind kind)
 {
     if (token->kind == kind) {
-        Token *t = token;
+        struct token *t = token;
         token = token->next;
         return t;
     }
     return NULL;
 }
 
-Token *expect_token(TokenKind kind)
+struct token *expect_token(enum token_kind kind)
 {
     if (token->kind == kind) {
-        Token *t = token;
+        struct token *t = token;
         token = token->next;
         return t;
     }
@@ -53,7 +53,7 @@ void error_token(char *fmt, ...)
     exit(1);
 }
 
-char *copy_token_str(Token *tok)
+char *copy_token_str(struct token *tok)
 {
     char *str = calloc(tok->len + 1, sizeof(char));
     strncpy(str, tok->str, tok->len);

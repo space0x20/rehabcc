@@ -32,19 +32,19 @@
 // type       = "int" "*"*
 
 static void parse_program(void);
-static Ast *parse_function(void);
-static Ast *parse_stmt(void);
-static Ast *parse_expr(void);
-static Ast *parse_assign(void);
-static Ast *parse_equality(void);
-static Ast *parse_relational(void);
-static Ast *parse_add(void);
-static Ast *parse_mul(void);
-static Ast *parse_unary(void);
-static Ast *parse_primary(void);
+static struct ast *parse_function(void);
+static struct ast *parse_stmt(void);
+static struct ast *parse_expr(void);
+static struct ast *parse_assign(void);
+static struct ast *parse_equality(void);
+static struct ast *parse_relational(void);
+static struct ast *parse_add(void);
+static struct ast *parse_mul(void);
+static struct ast *parse_unary(void);
+static struct ast *parse_primary(void);
 
-static Vector *parse_arglist(void);
-static Type *parse_type(void);
+static struct vector *parse_arglist(void);
+static struct type *parse_type(void);
 
 void parse(void)
 {
@@ -60,11 +60,11 @@ static void parse_program(void)
     code[i] = NULL;
 }
 
-static Ast *parse_function(void)
+static struct ast *parse_function(void)
 {
-    Ast *ast;
-    Token *tok;
-    Type *type;
+    struct ast *ast;
+    struct token *tok;
+    struct type *type;
 
     // return type
     type = parse_type();
@@ -91,7 +91,7 @@ static Ast *parse_function(void)
             error_token("不正な引数の名前です");
         }
         vector_push_back(ast->params, copy_token_str(tok));
-        LVar *lvar = find_lvar(tok);
+        struct lvar *lvar = find_lvar(tok);
         if (!lvar) {
             add_lvar(tok, type);
         }
@@ -112,16 +112,16 @@ static Ast *parse_function(void)
     return ast;
 }
 
-static Ast *parse_stmt(void)
+static struct ast *parse_stmt(void)
 {
     if (consume_token(TK_RETURN)) {
-        Ast *lhs = parse_expr();
+        struct ast *lhs = parse_expr();
         expect_token(TK_SCOLON);
         return new_ast_unary(AST_RETURN, lhs->type, lhs);
     }
 
     if (consume_token(TK_IF)) {
-        Ast *ast = new_ast(AST_IF, NULL);
+        struct ast *ast = new_ast(AST_IF, NULL);
         expect_token(TK_LPAREN);
         ast->cond = parse_expr();
         expect_token(TK_RPAREN);
@@ -131,7 +131,7 @@ static Ast *parse_stmt(void)
     }
 
     if (consume_token(TK_WHILE)) {
-        Ast *ast = new_ast(AST_WHILE, NULL);
+        struct ast *ast = new_ast(AST_WHILE, NULL);
         expect_token(TK_LPAREN);
         ast->cond = parse_expr();
         expect_token(TK_RPAREN);
@@ -140,7 +140,7 @@ static Ast *parse_stmt(void)
     }
 
     if (consume_token(TK_FOR)) {
-        Ast *ast = new_ast(AST_FOR, NULL);
+        struct ast *ast = new_ast(AST_FOR, NULL);
         expect_token(TK_LPAREN);
         if (!consume_token(TK_SCOLON)) {
             ast->init = parse_expr();
@@ -159,7 +159,7 @@ static Ast *parse_stmt(void)
     }
 
     if (consume_token(TK_LBRACE)) {
-        Ast *ast = new_ast(AST_BLOCK, NULL);
+        struct ast *ast = new_ast(AST_BLOCK, NULL);
         ast->stmts = new_vector();
         while (!consume_token(TK_RBRACE)) {
             vector_push_back(ast->stmts, (void *)parse_stmt());
@@ -167,16 +167,16 @@ static Ast *parse_stmt(void)
         return ast;
     }
 
-    Type *type = parse_type();
+    struct type *type = parse_type();
     if (type) {
-        Ast *ast = new_ast(AST_VARDECL, NULL);
-        Token *tok = consume_token(TK_IDENT);
+        struct ast *ast = new_ast(AST_VARDECL, NULL);
+        struct token *tok = consume_token(TK_IDENT);
         while (consume_token(TK_LBRACKET)) {
-            Token *num = expect_token(TK_NUM);
+            struct token *num = expect_token(TK_NUM);
             type = array_type(type, num->val);
             expect_token(TK_RBRACKET);
         }
-        LVar *lvar = find_lvar(tok);
+        struct lvar *lvar = find_lvar(tok);
         if (lvar) {
             error_token("変数を重複して宣言しています");
         }
@@ -185,29 +185,29 @@ static Ast *parse_stmt(void)
         return ast;
     }
 
-    Ast *ast = parse_expr();
+    struct ast *ast = parse_expr();
     expect_token(TK_SCOLON);
     return ast;
 }
 
-static Ast *parse_expr(void)
+static struct ast *parse_expr(void)
 {
     return parse_assign();
 }
 
-static Ast *parse_assign(void)
+static struct ast *parse_assign(void)
 {
-    Ast *ast = parse_equality();
+    struct ast *ast = parse_equality();
     if (consume_token(TK_ASSIGN)) {
-        Ast *rhs = parse_assign();
+        struct ast *rhs = parse_assign();
         ast = new_ast_binary(AST_ASSIGN, rhs->type, ast, rhs);
     }
     return ast;
 }
 
-static Ast *parse_equality(void)
+static struct ast *parse_equality(void)
 {
-    Ast *ast = parse_relational();
+    struct ast *ast = parse_relational();
     while (1) {
         if (consume_token(TK_EQ)) {
             ast = new_ast_binary(AST_EQ, int_type(), ast, parse_relational());
@@ -221,9 +221,9 @@ static Ast *parse_equality(void)
     }
 }
 
-static Ast *parse_relational(void)
+static struct ast *parse_relational(void)
 {
-    Ast *ast = parse_add();
+    struct ast *ast = parse_add();
     while (1) {
         if (consume_token(TK_LT)) {
             ast = new_ast_binary(AST_LT, int_type(), ast, parse_add());
@@ -243,9 +243,9 @@ static Ast *parse_relational(void)
     }
 }
 
-static Ast *parse_add(void)
+static struct ast *parse_add(void)
 {
-    Ast *ast = parse_mul();
+    struct ast *ast = parse_mul();
     while (1) {
         if (consume_token(TK_PLUS)) {
             // ポインタと整数の足し算
@@ -266,9 +266,9 @@ static Ast *parse_add(void)
     }
 }
 
-static Ast *parse_mul(void)
+static struct ast *parse_mul(void)
 {
-    Ast *ast = parse_unary();
+    struct ast *ast = parse_unary();
     while (1) {
         if (consume_token(TK_MUL)) {
             ast = new_ast_binary(AST_MUL, int_type(), ast, parse_unary());
@@ -282,9 +282,9 @@ static Ast *parse_mul(void)
     }
 }
 
-static Ast *parse_unary(void)
+static struct ast *parse_unary(void)
 {
-    Ast *lhs;
+    struct ast *lhs;
     if (consume_token(TK_MUL)) {
         lhs = parse_unary();
         return new_ast_unary(AST_DEREF, deref_type(lhs->type), lhs);
@@ -306,10 +306,10 @@ static Ast *parse_unary(void)
     return parse_primary();
 }
 
-static Ast *parse_primary(void)
+static struct ast *parse_primary(void)
 {
-    Ast *ast;
-    Token *tok;
+    struct ast *ast;
+    struct token *tok;
 
     if (consume_token(TK_LPAREN)) {
         ast = parse_expr();
@@ -332,7 +332,7 @@ static Ast *parse_primary(void)
             return ast;
         }
 
-        LVar *lvar = find_lvar(tok);
+        struct lvar *lvar = find_lvar(tok);
         if (!lvar) {
             error_token("定義されていない変数を使用しています");
         }
@@ -351,9 +351,9 @@ static Ast *parse_primary(void)
     error_token("パーズできません");
 }
 
-static Vector *parse_arglist(void)
+static struct vector *parse_arglist(void)
 {
-    Vector *args = new_vector();
+    struct vector *args = new_vector();
     vector_push_back(args, parse_expr());
     while (consume_token(TK_COLON)) {
         vector_push_back(args, parse_expr());
@@ -361,12 +361,12 @@ static Vector *parse_arglist(void)
     return args;
 }
 
-static Type *parse_type(void)
+static struct type *parse_type(void)
 {
     if (!consume_token(TK_INT)) {
         return NULL;
     }
-    Type *type = int_type();
+    struct type *type = int_type();
     while (consume_token(TK_MUL)) {
         type = ptr_type(type);
     }

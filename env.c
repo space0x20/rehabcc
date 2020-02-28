@@ -1,10 +1,10 @@
 #include "rehabcc.h"
 
-static LVar *locals;
+static struct lvar *locals;
 
 void init_lvar(void)
 {
-    LVar *lvar = calloc(1, sizeof(LVar));
+    struct lvar *lvar = calloc(1, sizeof(struct lvar));
     lvar->next = NULL;
     lvar->name = NULL;
     lvar->len = 0;
@@ -13,14 +13,14 @@ void init_lvar(void)
     locals = lvar;
 }
 
-LVar *get_locals(void)
+struct lvar *get_locals(void)
 {
     return locals;
 }
 
-LVar *add_lvar(Token *tok, Type *type)
+struct lvar *add_lvar(struct token *tok, struct type *type)
 {
-    LVar *lvar = calloc(1, sizeof(LVar));
+    struct lvar *lvar = calloc(1, sizeof(struct lvar));
     lvar->next = locals;
     lvar->name = tok->str;
     lvar->len = tok->len;
@@ -30,9 +30,9 @@ LVar *add_lvar(Token *tok, Type *type)
     return lvar;
 }
 
-LVar *find_lvar(Token *tok)
+struct lvar *find_lvar(struct token *tok)
 {
-    for (LVar *lvar = locals; lvar != NULL; lvar = lvar->next) {
+    for (struct lvar *lvar = locals; lvar != NULL; lvar = lvar->next) {
         if (lvar->len == tok->len && !memcmp(lvar->name, tok->str, lvar->len)) {
             return lvar;
         }

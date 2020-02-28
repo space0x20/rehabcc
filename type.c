@@ -1,15 +1,15 @@
 #include "rehabcc.h"
 
-static Type *new_type(BasicType bt)
+static struct type *new_type(enum basic_type bt)
 {
-    Type *type = calloc(1, sizeof(Type));
+    struct type *type = calloc(1, sizeof(struct type));
     type->bt = bt;
     return type;
 }
 
-Type *void_type(void)
+struct type *void_type(void)
 {
-    static Type *type = NULL;
+    static struct type *type = NULL;
     if (!type) {
         type = new_type(T_VOID);
         type->nbyte = 0;
@@ -17,9 +17,9 @@ Type *void_type(void)
     return type;
 }
 
-Type *int_type(void)
+struct type *int_type(void)
 {
-    static Type *type = NULL;
+    static struct type *type = NULL;
     if (!type) {
         type = new_type(T_INT);
         type->nbyte = 4;
@@ -27,22 +27,22 @@ Type *int_type(void)
     return type;
 }
 
-Type *ptr_type(Type *ptr_to)
+struct type *ptr_type(struct type *ptr_to)
 {
-    Type *type = new_type(T_PTR);
+    struct type *type = new_type(T_PTR);
     type->ptr_to = ptr_to;
     type->nbyte = 8;
     return type;
 }
 
-Type *deref_type(Type *type)
+struct type *deref_type(struct type *type)
 {
     return type->ptr_to;
 }
 
-Type *array_type(Type *array_of, int size)
+struct type *array_type(struct type *array_of, int size)
 {
-    Type *type = new_type(T_ARRAY);
+    struct type *type = new_type(T_ARRAY);
     type->ptr_to = array_of;
     type->array_size = size;
     type->nbyte = array_of->nbyte * size;
