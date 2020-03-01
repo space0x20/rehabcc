@@ -106,6 +106,21 @@ loop:
             continue;
         }
 
+        // 文字列リテラル
+        if (*p == '"') {
+            char *new_p = p + 1;
+            while (*new_p != '"') {
+                new_p++;
+            }
+            new_p++;
+            int len = new_p - p;
+            cur = new_token(TK_STRING, cur, p, len);
+            cur->string = calloc(len - 1, sizeof(char));
+            memcpy(cur->string, p + 1, len - 2);
+            p = new_p;
+            continue;
+        }
+
         error_at(p, "トークン分割できません");
     }
 

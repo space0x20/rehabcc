@@ -24,6 +24,7 @@
 //            | "&" unary
 //            | "sizeof" unary
 // primary    = num
+//            | string
 //            | ident "(" arglist? ")" ... 関数呼び出し
 //            | ident ("[" expr "]")*  ... 変数
 //            | "(" expr ")"
@@ -338,6 +339,14 @@ static struct ast *parse_primary(void)
     if (consume_token(TK_LPAREN)) {
         ast = parse_expr();
         expect_token(TK_RPAREN);
+        return ast;
+    }
+
+    tok = consume_token(TK_STRING);
+    if (tok) {
+        ast = new_ast(AST_STRING, ptr_type(char_type()));
+        ast->string_index = string_literals->size;
+        vector_push_back(string_literals, tok->string);
         return ast;
     }
 

@@ -9,6 +9,9 @@ char *user_input;
 // 構文木列
 struct vector *asts;
 
+// 文字列リテラル
+struct vector *string_literals;
+
 void error(char *fmt, ...)
 {
     va_list ap;
@@ -40,6 +43,7 @@ int main(int argc, char **argv)
     }
 
     asts = new_vector();
+    string_literals = new_vector();
 
     // トークン分割
     user_input = argv[1];

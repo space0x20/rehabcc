@@ -79,6 +79,11 @@ static void gen(struct ast *node)
         }
         return;
     }
+    case AST_STRING: {
+        println("  mov rax, offset flat:.L.string%d", node->string_index);
+        println("  push rax");
+        return;
+    }
     case AST_ASSIGN: {
         gen_lval(node->lhs);
         gen(node->rhs);
@@ -167,6 +172,9 @@ static void gen(struct ast *node)
             println("  pop rax");
             println("  mov %s, rax", regs[i]);
         }
+
+        // 可変長引数の呼び出しに備えてALを0にする
+        println("  mov al, 0");
         // call 命令の時点で rsp を 16 バイト境界に揃える
         println("  mov rax, rsp");
         println("  and rax, 15");
@@ -278,6 +286,11 @@ void generate(void)
     // アセンブリの前半部分
     println(".intel_syntax noprefix");
     println(".global main");
+    println(".text");
+    for (int i = 0; i < string_literals->size; i++) {
+        println(".L.string%d:", i);
+        println("  .string \"%s\"", string_literals->data[i]);
+    }
     struct vector *all_ast = get_all_ast();
     for (int i = 0; i < all_ast->size; i++) {
         gen(all_ast->data[i]);

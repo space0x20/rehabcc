@@ -55,6 +55,7 @@ enum token_kind {
     TK_SIZEOF,   // sizeof
     TK_NUM,      // 整数
     TK_IDENT,    // 識別子
+    TK_STRING,   // 文字列リテラル
     TK_EOF,      // 入力終わり
 };
 
@@ -64,6 +65,7 @@ struct token {
     char *str;            // トークンの元となる文字列の開始位置
     int len;              // トークンの元となる文字列の長さ
     int val;              // 整数トークンの値
+    char *string;         // 文字列トークンの値
 };
 
 struct token *new_token(enum token_kind, struct token *, char *, int);
@@ -73,6 +75,7 @@ struct token *consume_token(enum token_kind);
 struct token *expect_token(enum token_kind);
 void error_token(char *, ...);
 char *copy_token_str(struct token *);
+
 void debug_print_token();
 
 // type.c ///////////////////////////////////////
@@ -142,6 +145,7 @@ enum ast_kind {
     AST_LVAR,     // ローカル変数
     AST_GVAR,     // グローバル変数
     AST_ADD_PTR,  // ポインタの足し算
+    AST_STRING,   // 文字列リテラル
 };
 
 struct ast {
@@ -173,6 +177,9 @@ struct ast {
     char *funcname;
     struct var *locals;
     struct vector *params;
+
+    // AST_STRING
+    int string_index;
 };
 
 void add_ast(struct ast *ast);
@@ -189,6 +196,9 @@ extern char *user_input;
 
 // 構文木列
 extern struct ast *code[];
+
+// 文字列リテラル
+extern struct vector *string_literals;
 
 // エラー処理
 void error(char *fmt, ...);

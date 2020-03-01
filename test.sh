@@ -107,5 +107,8 @@ try 42 'int gvar; int main() { gvar = 42; return gvar; }'
 # ステップ24
 try 3 'int main() { char x[3]; x[0] = -1; x[1] = 2; int y; y = 4; return x[0] + y; }'
 
+# ステップ25
+try 42 'int main() { printf("hello rehabcc!"); return 42; }'
+
 echo OK
 rm -f tmp tmp.s
