@@ -12,6 +12,11 @@ struct token *new_token(enum token_kind kind, struct token *cur, char *str, int 
     return tok;
 }
 
+struct token *get_token(void)
+{
+    return token;
+}
+
 void set_token(struct token *t)
 {
     token = t;
@@ -58,4 +63,11 @@ char *copy_token_str(struct token *tok)
     char *str = calloc(tok->len + 1, sizeof(char));
     strncpy(str, tok->str, tok->len);
     return str;
+}
+
+void debug_print_token(void)
+{
+    char *str = copy_token_str(token);
+    fprintf(stderr, "token = %d\n", token->kind);
+    fprintf(stderr, "str = %s\n", str);
 }

@@ -4,7 +4,7 @@ try() {
     input="$2"
 
     ./rehabcc "$input" > tmp.s
-    gcc -o tmp tmp.s test/helper.o
+    gcc -no-pie -o tmp tmp.s test/helper.o
     ./tmp
 
     actual="$?"
@@ -100,6 +100,9 @@ try 11 'int main() { int a[10]; *a = 1; *(a + 2) = 10; int *p; p = a; return *p 
 
 # ステップ22
 try 42 'int main() { int a[10]; a[5] = 42; return a[5]; }'
+
+# ステップ23
+try 42 'int gvar; int main() { gvar = 42; return gvar; }'
 
 echo OK
 rm -f tmp tmp.s

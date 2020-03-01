@@ -1,5 +1,20 @@
 #include "rehabcc.h"
 
+struct vector *asts = NULL;
+
+void add_ast(struct ast *ast)
+{
+    if (!asts) {
+        asts = new_vector();
+    }
+    vector_push_back(asts, ast);
+}
+
+struct vector *get_all_ast(void)
+{
+    return asts;
+}
+
 struct ast *new_ast(enum ast_kind kind, struct type *type)
 {
     struct ast *ast = calloc(1, sizeof(struct ast));

@@ -31,6 +31,11 @@ static void gen_lval(struct ast *node)
         println("  push rax");
         return;
     }
+    case AST_GVAR: {
+        println("  mov rax, offset %s", node->var->name);
+        println("  push rax");
+        return;
+    }
     case AST_DEREF: {
         // *x = 42; を評価する場合、変数 x に格納されている値＝アドレスがほしい。
         // なので、x を右辺値として評価すればいい。
@@ -48,7 +53,8 @@ static void gen(struct ast *node)
         println("  push %d", node->val);
         return;
     }
-    case AST_LVAR: {
+    case AST_LVAR:
+    case AST_GVAR: {
         // 変数を右辺値として評価する
         // スタックトップに変数のアドレスが来る
         gen_lval(node);
@@ -259,7 +265,13 @@ void generate(void)
     // アセンブリの前半部分
     println(".intel_syntax noprefix");
     println(".global main");
-    for (int i = 0; code[i] != NULL; i++) {
-        gen(code[i]);
+    struct vector *all_ast = get_all_ast();
+    for (int i = 0; i < all_ast->size; i++) {
+        gen(all_ast->data[i]);
+    }
+    println(".data");
+    for (struct var *var = get_global_vars(); var != NULL; var = var->next) {
+        println("%s:", var->name);
+        println("  .zero %d", var->type->nbyte);
     }
 }

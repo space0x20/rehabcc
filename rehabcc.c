@@ -7,7 +7,7 @@ struct token *token;
 char *user_input;
 
 // 構文木列
-struct ast *code[100];
+struct vector *asts;
 
 void error(char *fmt, ...)
 {
@@ -38,6 +38,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "引数の個数が正しくありません\n");
         return 1;
     }
+
+    asts = new_vector();
 
     // トークン分割
     user_input = argv[1];

@@ -1,8 +1,9 @@
 #include "rehabcc.h"
 
 // 文法
-// program    = function*
+// program    = (function | global_var)*
 // function   = type ident "(" paramlist? ")" block
+// global_var = type ident ("[" num "]")? ";"
 // block      = "{" stmt* "}"
 // stmt       = expr ";"
 //            | block
@@ -33,6 +34,7 @@
 
 static void parse_program(void);
 static struct ast *parse_function(void);
+static void parse_global_var(void);
 static struct ast *parse_stmt(void);
 static struct ast *parse_expr(void);
 static struct ast *parse_assign(void);
@@ -45,6 +47,7 @@ static struct ast *parse_primary(void);
 
 static struct vector *parse_arglist(void);
 static struct type *parse_type(void);
+static struct type *parse_type_postfix(struct type *);
 
 void parse(void)
 {
@@ -55,9 +58,21 @@ static void parse_program(void)
 {
     int i = 0;
     while (!consume_token(TK_EOF)) {
-        code[i++] = parse_function();
+        struct token *backup = get_token();
+        struct type *type = parse_type();
+        if (!type) {
+            error_token("関数の返り値の型あるいはグローバル変数の型が与えられていません");
+        }
+        expect_token(TK_IDENT);
+        if (consume_token(TK_LPAREN)) {
+            set_token(backup);
+            add_ast(parse_function());
+        }
+        else {
+            set_token(backup);
+            parse_global_var();
+        }
     }
-    code[i] = NULL;
 }
 
 static struct ast *parse_function(void)
@@ -110,6 +125,19 @@ static struct ast *parse_function(void)
 
     ast->locals = get_local_vars();
     return ast;
+}
+
+static void parse_global_var(void)
+{
+    struct type *type = parse_type();
+    struct token *ident = expect_token(TK_IDENT);
+    type = parse_type_postfix(type);
+    // todo: グローバル変数の初期値
+    expect_token(TK_SCOLON);
+    if (find_global_var(ident)) {
+        error_token("すでに定義されているグローバル変数です");
+    }
+    add_global_var(ident, type);
 }
 
 static struct ast *parse_stmt(void)
@@ -171,11 +199,7 @@ static struct ast *parse_stmt(void)
     if (type) {
         struct ast *ast = new_ast(AST_VARDECL, NULL);
         struct token *tok = consume_token(TK_IDENT);
-        while (consume_token(TK_LBRACKET)) {
-            struct token *num = expect_token(TK_NUM);
-            type = array_type(type, num->val);
-            expect_token(TK_RBRACKET);
-        }
+        type = parse_type_postfix(type);
         struct var *lvar = find_local_var(tok);
         if (lvar) {
             error_token("変数を重複して宣言しています");
@@ -332,18 +356,29 @@ static struct ast *parse_primary(void)
             return ast;
         }
 
-        struct var *lvar = find_local_var(tok);
-        if (!lvar) {
-            error_token("定義されていない変数を使用しています");
+        struct var *var = find_local_var(tok);
+        if (var) {
+            ast = new_ast(AST_LVAR, var->type);
+            ast->var = var;
+            if (consume_token(TK_LBRACKET)) {
+                struct ast *add = new_ast_binary(AST_ADD_PTR, int_type(), ast, parse_expr());
+                ast = new_ast_unary(AST_DEREF, deref_type(var->type), add);
+                expect_token(TK_RBRACKET);
+            }
+            return ast;
         }
-        ast = new_ast(AST_LVAR, lvar->type);
-        ast->var = lvar;
-        if (consume_token(TK_LBRACKET)) {
-            struct ast *add = new_ast_binary(AST_ADD_PTR, int_type(), ast, parse_expr());
-            ast = new_ast_unary(AST_DEREF, deref_type(lvar->type), add);
-            expect_token(TK_RBRACKET);
+        var = find_global_var(tok);
+        if (var) {
+            ast = new_ast(AST_GVAR, var->type);
+            ast->var = var;
+            if (consume_token(TK_LBRACKET)) {
+                struct ast *add = new_ast_binary(AST_ADD_PTR, int_type(), ast, parse_expr());
+                ast = new_ast_unary(AST_DEREF, deref_type(var->type), add);
+                expect_token(TK_RBRACKET);
+            }
+            return ast;
         }
-        return ast;
+        error_token("定義されていない変数を使用しています");
     }
 
     tok = consume_token(TK_NUM);
@@ -374,6 +409,16 @@ static struct type *parse_type(void)
     struct type *type = int_type();
     while (consume_token(TK_MUL)) {
         type = ptr_type(type);
+    }
+    return type;
+}
+
+static struct type *parse_type_postfix(struct type *type)
+{
+    while (consume_token(TK_LBRACKET)) {
+        struct token *num = expect_token(TK_NUM); // todo: 配列数は定数のみ可
+        type = array_type(type, num->val);
+        expect_token(TK_RBRACKET);
     }
     return type;
 }

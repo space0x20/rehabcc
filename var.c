@@ -1,6 +1,26 @@
 #include "rehabcc.h"
 
-static struct var *locals;
+static struct var *locals = NULL;
+static struct var *globals = NULL;
+
+static struct var *add_var(struct var *head, struct token *tok, struct type *type)
+{
+    struct var *var = calloc(1, sizeof(struct var));
+    var->next = head;
+    var->name = copy_token_str(tok);
+    var->type = type;
+    return var;
+}
+
+static struct var *find_var(struct var *head, struct token *tok)
+{
+    for (struct var *var = head; var != NULL; var = var->next) {
+        if (!memcmp(var->name, tok->str, tok->len)) {
+            return var;
+        }
+    }
+    return NULL;
+}
 
 void clear_local_vars(void)
 {
@@ -14,26 +34,34 @@ struct var *get_local_vars(void)
 
 struct var *add_local_var(struct token *tok, struct type *type)
 {
-    struct var *lvar = calloc(1, sizeof(struct var));
-    lvar->next = locals;
-    lvar->name = copy_token_str(tok);
-    lvar->type = type;
+    struct var *var = add_var(locals, tok, type);
     if (locals) {
-        lvar->offset = align(locals->offset + type->nbyte, 8);
+        var->offset = align(locals->offset + type->nbyte, 8);
     }
     else {
-        lvar->offset = align(type->nbyte, 8);
+        var->offset = align(type->nbyte, 8);
     }
-    locals = lvar;
-    return lvar;
+    locals = var;
+    return var;
 }
 
 struct var *find_local_var(struct token *tok)
 {
-    for (struct var *lvar = locals; lvar != NULL; lvar = lvar->next) {
-        if (!memcmp(lvar->name, tok->str, tok->len)) {
-            return lvar;
-        }
-    }
-    return NULL;
+    return find_var(locals, tok);
+}
+
+struct var *get_global_vars(void)
+{
+    return globals;
+}
+
+struct var *add_global_var(struct token *tok, struct type *type)
+{
+    globals = add_var(globals, tok, type);
+    return globals;
+}
+
+struct var *find_global_var(struct token *tok)
+{
+    return find_var(globals, tok);
 }

@@ -66,11 +66,13 @@ struct token {
 };
 
 struct token *new_token(enum token_kind, struct token *, char *, int);
+struct token *get_token(void);
 void set_token(struct token *);
 struct token *consume_token(enum token_kind);
 struct token *expect_token(enum token_kind);
 void error_token(char *, ...);
 char *copy_token_str(struct token *);
+void debug_print_token();
 
 // type.c ///////////////////////////////////////
 
@@ -107,6 +109,9 @@ void clear_local_vars(void);
 struct var *get_local_vars(void);
 struct var *add_local_var(struct token *, struct type *);
 struct var *find_local_var(struct token *);
+struct var *get_global_vars(void);
+struct var *add_global_var(struct token *, struct type *);
+struct var *find_global_var(struct token *);
 
 // ast.c ////////////////////////////////////////
 
@@ -132,6 +137,7 @@ enum ast_kind {
     AST_DEREF,    // デリファレンス *
     AST_VARDECL,  // 変数宣言
     AST_LVAR,     // ローカル変数
+    AST_GVAR,     // グローバル変数
     AST_ADD_PTR,  // ポインタの足し算
 };
 
@@ -166,6 +172,8 @@ struct ast {
     struct vector *params;
 };
 
+void add_ast(struct ast *ast);
+struct vector *get_all_ast(void);
 struct ast *new_ast(enum ast_kind, struct type *);
 struct ast *new_ast_unary(enum ast_kind, struct type *, struct ast *);
 struct ast *new_ast_binary(enum ast_kind, struct type *, struct ast *, struct ast *);
