@@ -17,6 +17,21 @@ static int get_label()
     return label;
 }
 
+static void load(struct type *type)
+{
+    println("  pop rax");
+    switch (type->bt) {
+    case T_CHAR:
+        println("  movsx ecx, byte ptr [rax]");
+        break;
+    case T_INT:
+    case T_PTR:
+        println("  mov rax, [rax]");
+        break;
+    }
+    println("  push rax");
+}
+
 static void gen(struct ast *);
 
 // ノードを左辺値として評価して、スタックにプッシュする
@@ -60,9 +75,7 @@ static void gen(struct ast *node)
         gen_lval(node);
         if (node->var->type->bt != T_ARRAY) {
             // 配列でない場合は変数の中身を読み出す
-            println("  pop rax");
-            println("  mov rax, [rax]"); // rax に変数の値を読み出す
-            println("  push rax");
+            load(node->var->type);
         }
         return;
     }

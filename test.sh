@@ -104,5 +104,8 @@ try 42 'int main() { int a[10]; a[5] = 42; return a[5]; }'
 # ステップ23
 try 42 'int gvar; int main() { gvar = 42; return gvar; }'
 
+# ステップ24
+try 3 'int main() { char x[3]; x[0] = -1; x[1] = 2; int y; y = 4; return x[0] + y; }'
+
 echo OK
 rm -f tmp tmp.s

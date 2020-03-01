@@ -51,6 +51,7 @@ enum token_kind {
     TK_WHILE,    // while
     TK_FOR,      // for
     TK_INT,      // int
+    TK_CHAR,     // char
     TK_SIZEOF,   // sizeof
     TK_NUM,      // 整数
     TK_IDENT,    // 識別子
@@ -78,6 +79,7 @@ void debug_print_token();
 
 enum basic_type {
     T_VOID,
+    T_CHAR,
     T_INT,
     T_PTR,
     T_ARRAY,
@@ -91,6 +93,7 @@ struct type {
 };
 
 struct type *void_type(void);
+struct type *char_type(void);
 struct type *int_type(void);
 struct type *ptr_type(struct type *);
 struct type *deref_type(struct type *);

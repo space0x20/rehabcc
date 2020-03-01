@@ -40,6 +40,7 @@ static struct token_kind_str keywords[] = {
     {TK_WHILE, "while"},
     {TK_FOR, "for"},
     {TK_INT, "int"},
+    {TK_CHAR, "char"},
     {TK_EOF, ""}, // 最後においておくこと
 };
 // clang-format on

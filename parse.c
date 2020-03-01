@@ -403,10 +403,16 @@ static struct vector *parse_arglist(void)
 
 static struct type *parse_type(void)
 {
-    if (!consume_token(TK_INT)) {
+    struct type *type;
+    if (consume_token(TK_INT)) {
+        type = int_type();
+    }
+    else if (consume_token(TK_CHAR)) {
+        type = char_type();
+    }
+    else {
         return NULL;
     }
-    struct type *type = int_type();
     while (consume_token(TK_MUL)) {
         type = ptr_type(type);
     }

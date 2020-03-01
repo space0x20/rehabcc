@@ -17,6 +17,16 @@ struct type *void_type(void)
     return type;
 }
 
+struct type *char_type(void)
+{
+    static struct type *type = NULL;
+    if (!type) {
+        type = new_type(T_CHAR);
+        type->nbyte = 1;
+    }
+    return type;
+}
+
 struct type *int_type(void)
 {
     static struct type *type = NULL;
