@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <memory.h>
 #include <stdarg.h>
 #include <stdbool.h>
